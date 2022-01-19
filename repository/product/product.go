@@ -40,14 +40,11 @@ func (pr *ProductRepository) Delete(productId int) error {
 	return nil
 }
 
-func (pr *ProductRepository) Update(newProducts entities.Product, productId int) ([]entities.Product, error) {
-	product := []entities.Product{}
+func (pr *ProductRepository) Update(newProduct entities.Product, productId int) (entities.Product, error) {
+	product := entities.Product{}
 
-	pr.db.Where("id = ?", productId).Find(&product).Save(
-		map[string]interface{}{
-			"name": newProducts.Name, "price": newProducts.Price, "description": newProducts.Description,
-		},
-	)
+	pr.db.Find(&product, "id=?", productId)
+	pr.db.Model(&product).Updates(product)
 
 	return product, nil
 }

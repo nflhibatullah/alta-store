@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/labstack/gommon/log"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo/v4"
@@ -22,24 +23,27 @@ func NewUsersControllers(usrep users.UserInterface) *UsersController {
 }
 func (uscon UsersController) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		tmpUser := entities.User{}
+		var login entities.User
+		c.Bind(&login)
 
-		if err := c.Bind(&tmpUser); err != nil {
-			return err
-		}
-
-		res, err := uscon.Repo.Login(tmpUser.Email, tmpUser.Password)
+		user, err := uscon.Repo.Login(login.Email)
 		if err != nil {
-			return c.JSON(http.StatusNotFound, "Data tidak ditemukan")
+			return echo.NewHTTPError(http.StatusNotFound, "User tidak ditemukan")
 		}
 
-		tokenJWT, _ := middlewares.CreateToken(int(res.ID))
-		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "Berhasil login",
-				"data":    tokenJWT,
-			},
-		)
+		hash, err := middlewares.Checkpwd(user.Password, login.Password)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, "Ada kesalahan dalam kredensial")
+		}
+
+		var token string
+
+		if hash {
+			token, _ = middlewares.CreateToken(int(user.ID), user.Role)
+		}
+
+		return c.JSON(http.StatusOK, token)
+
 	}
 }
 
@@ -115,23 +119,23 @@ func (uscon UsersController) GetUserCtrl() echo.HandlerFunc {
 func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		id, err := strconv.Atoi(c.Param("id"))
-
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
-		}
+		id, _ := middlewares.ExtractTokenUser(c)
 
 		updateUserReq := PutUserRequestFormat{}
 		if err := c.Bind(&updateUserReq); err != nil {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
+		hash, _ := bcrypt.GenerateFromPassword([]byte(updateUserReq.Password), 14)
+
 		updateUser := entities.User{
 			Name:     updateUserReq.Name,
-			Password: updateUserReq.Password,
+			Email:    updateUserReq.Email,
+			Password: string(hash),
 		}
 
 		if _, err := uscon.Repo.Update(updateUser, id); err != nil {
+			log.Error(err)
 			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 		}
 		return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
@@ -143,19 +147,25 @@ func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 func (uscon UsersController) DeleteUserCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		id, err := strconv.Atoi(c.Param("id"))
-
-		if err != nil {
+		id, _ := middlewares.ExtractTokenUser(c)
+		deleteUserReq := DeleteRequestFormat{}
+		if err := c.Bind(&deleteUserReq); err != nil {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
-		deletedUser, _ := uscon.Repo.Delete(id)
-
-		if deletedUser.ID != 0 {
-			return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
-		} else {
-			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
+		user, err := uscon.Repo.GetDeleteData(id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "User tidak ditemukan")
 		}
+
+		_, err = middlewares.Checkpwd(user.Password, deleteUserReq.Password)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, "Ada kesalahan dalam kredensial")
+		}
+
+		uscon.Repo.Delete(id)
+
+		return c.JSON(http.StatusOK, "Berhasil menghapus user")
 
 	}
 

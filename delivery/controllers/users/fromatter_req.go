@@ -11,3 +11,7 @@ type PutUserRequestFormat struct {
 	Name     string `json:"name" form:"name"`
 	Password string `json:"password" form:"password"`
 }
+
+type DeleteRequestFormat struct {
+	Password string `json:"password" form:"password"`
+}
