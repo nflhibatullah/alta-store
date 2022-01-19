@@ -45,8 +45,8 @@ func (tc TransactionController) Create(c echo.Context) error {
 	for _, item := range transactionRequest.Products {
 		product := entities.TransactionDetail{
 			TransactionID: transactionData.ID,
-			ProductID:     uint(item),
-			Quantity:      2,
+			ProductID:     uint(item.ProductID),
+			Quantity:      item.Quantity,
 		}
 		_, err := tc.TransactionRepository.StoreItemProduct(int(transactionData.ID), product)
 

@@ -3,6 +3,7 @@ package utils
 import (
 	"altastore/configs"
 	"altastore/entities"
+	"log"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -30,7 +31,13 @@ func InitDB(config *configs.AppConfig) *gorm.DB {
 }
 
 func InitialMigrate(db *gorm.DB)  {
+	db.AutoMigrate(&entities.User{})
 	db.AutoMigrate(&entities.Transaction{})
 	db.AutoMigrate(&entities.TransactionDetail{})
-	db.AutoMigrate(&entities.User{})
+	db.AutoMigrate(&entities.Product{})
+	err := db.SetupJoinTable(&entities.Transaction{}, "Products", &entities.TransactionDetail{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

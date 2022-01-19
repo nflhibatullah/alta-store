@@ -3,9 +3,9 @@ package product
 import "altastore/entities"
 
 type ProductInterface interface {
-	GetAll() ([]entities.Products, error)
-	Get(toDoId int) ([]entities.Products, error)
-	Create(todo entities.Products) (entities.Products, error)
-	Delete(toDoId int) (entities.Products, error)
-	Update(newProduct entities.Products, toDoId int) ([]entities.Products, error)
+	GetAll() ([]entities.Product, error)
+	Get(toDoId int) ([]entities.Product, error)
+	Create(todo entities.Product) (entities.Product, error)
+	Delete(toDoId int) (entities.Product, error)
+	Update(newProduct entities.Product, toDoId int) ([]entities.Product, error)
 }

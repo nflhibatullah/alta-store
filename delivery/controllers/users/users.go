@@ -1,14 +1,14 @@
 package user
 
 import (
-	"altastore/configs"
 	"altastore/delivery/common"
 	"altastore/delivery/middlewares"
 	"altastore/entities"
 	"altastore/repository/users"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo/v4"
 )
@@ -33,7 +33,7 @@ func (uscon UsersController) Login() echo.HandlerFunc {
 			return c.JSON(http.StatusNotFound, "Data tidak ditemukan")
 		}
 
-		tokenJWT, _ := middlewares.CreateToken(int(res.ID), configs.SecretKey)
+		tokenJWT, _ := middlewares.CreateToken(int(res.ID))
 		return c.JSON(
 			http.StatusOK, map[string]interface{}{
 				"message": "Berhasil login",

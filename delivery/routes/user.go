@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"altastore/configs"
+	"altastore/constant"
 	user "altastore/delivery/controllers/users"
 	"altastore/delivery/middlewares"
 
@@ -11,7 +11,7 @@ import (
 
 func RegisterUserPath(e *echo.Echo, userCtrl *user.UsersController) {
 
-	e.POST("/users/register", userCtrl.PostUserCtrl())
-	e.POST("/users/login", userCtrl.Login())
-	e.GET("/users", userCtrl.GetAllUsersCtrl(), middleware.JWT([]byte(configs.SecretKey)), middlewares.CheckRole)
+	e.POST("/register", userCtrl.PostUserCtrl())
+	e.POST("/login", userCtrl.Login())
+	e.GET("/users", userCtrl.GetAllUsersCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
 }

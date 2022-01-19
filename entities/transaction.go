@@ -12,5 +12,5 @@ type Transaction struct {
 	PaymentUrl string
 	TotalPrice float64 `gorm:"not null"`
 	Status string `gorm:"not null"`
-	Transaction []TransactionDetail
+	Products []Product `gorm:"many2many:transaction_details;"`
 }

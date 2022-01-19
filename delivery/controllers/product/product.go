@@ -4,9 +4,10 @@ import (
 	"altastore/delivery/common"
 	"altastore/entities"
 	"altastore/repository/product"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
+
+	"github.com/labstack/echo/v4"
 )
 
 type ProductController struct {
@@ -27,7 +28,7 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
-		newProduct := entities.Products{
+		newProduct := entities.Product{
 			Name:        newProductReq.Name,
 			Price:       newProductReq.Price,
 			Stock:       newProductReq.Stock,
@@ -91,7 +92,7 @@ func (procon ProductController) DeleteProductCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 		var err error
-		id, err := strconv.Atoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 
 		_, err = procon.Repo.Delete(id)
 		if err != nil {
@@ -113,7 +114,7 @@ func (procon ProductController) PutProductCtrl() echo.HandlerFunc {
 		id, _ := strconv.Atoi(c.Param("id"))
 		err := c.Bind(&PutProductReq)
 
-		newProduct := entities.Products{
+		newProduct := entities.Product{
 			Name:        PutProductReq.Name,
 			Description: PutProductReq.Description,
 		}
