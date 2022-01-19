@@ -1,0 +1,623 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Altastore",
+    "description": "Altastore",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000"
+    }
+  ],
+  "paths":  {
+    "/register": {
+      "post": {
+        "summary": "Create New User",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "400": {
+            "$ref": "#/components/responses/Response400"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Login User",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "naufal"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "400": {
+            "$ref": "#/components/responses/Response400"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get All Users",
+        "description": "This endpoint only access by Admin",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get User By ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update User By ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Arif"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "arif123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete User ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      }
+    },
+    "/product": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create Product",
+        "tags": [
+          "Product"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "projectID": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "Name": {
+                    "type": "string",
+                    "example": "Hp xiaomi"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "Description": {
+                    "type": "string",
+                    "example": "Hp kentang cuma buat nelfon"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "400": {
+            "$ref": "#/components/responses/Response400"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all product",
+        "tags": [
+          "Product"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      }
+    },
+    "/product/{productId}": {
+      "get": {
+
+        "summary": "Get a product by ID",
+        "tags": [
+          "Product"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update product by ID",
+        "tags": [
+          "Product"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "projectID": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "Name": {
+                    "type": "string",
+                    "example": "Hp xiamoi tipe 1"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "example": 15
+                  },
+                  "Description": {
+                    "type": "string",
+                    "example": "Hp xiaomi terbaru"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete Product by ID",
+        "tags": [
+          "Product"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      }
+    },
+    "/cart": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create Cart",
+        "tags": [
+          "Cart"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+
+                  "userId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "productId": {
+                    "type": "string",
+                    "example": "Hp kentang cuma buat nelfon"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "400": {
+            "$ref": "#/components/responses/Response400"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all Cart",
+        "tags": [
+          "Cart"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      }
+
+    },
+    "/cart/{productid}": {
+      "put": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update cart by productId",
+        "tags": [
+          "Cart"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "example": 15
+                  }
+
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete cart by productID",
+        "tags": [
+          "Cart"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Response200"
+          },
+          "404": {
+            "$ref": "#/components/responses/Response404"
+          }
+        }
+      }
+    },
+    "/transaction": {
+      "post": {
+        "tags": ["Transaction"]
+      },
+      "get": {
+        "tags": ["Transaction"]
+      },
+    },
+    "/transaction/callback": {
+      "post":{
+        "tags": ["Transaction"]
+      }
+    },
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Access token is missing or invalid"
+      },
+      "Response200": {
+        "description": "success create",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Successful Operation"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Response400": {
+        "description": "bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 400
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Bad Request"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Response404": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 404
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Not Found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "UsersSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "AndrewPrasetyo"
+          },
+          "password": {
+            "type": "string",
+            "example": "Andrew123"
+          }
+        }
+      }
+    }
+  }
+}

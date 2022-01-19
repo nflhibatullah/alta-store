@@ -22,6 +22,7 @@ type AppConfig struct {
 
 var lock = &sync.Mutex{}
 var appConfig *AppConfig
+var SecretKey = "rahasia"
 
 func GetConfig() *AppConfig {
 	lock.Lock()

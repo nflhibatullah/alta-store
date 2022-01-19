@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterTransactionPath(e *echo.Echo, uc controller.TransactionController) {
+func RegisterTransactionPath(e *echo.Echo, uc *controller.TransactionController) {
 
 	e.POST("/transactions", uc.Create)
 
