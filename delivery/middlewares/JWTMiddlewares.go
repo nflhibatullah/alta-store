@@ -1,19 +1,20 @@
 package middlewares
 
 import (
+	"altastore/configs"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"time"
 )
 
-func CreateToken(userId int, SecretKey string) (string, error) {
+func CreateToken(userId int, role string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
-	claims["role"] = "user"
+	claims["role"] = role
 	claims["userId"] = int(userId)
 	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(SecretKey))
+	return token.SignedString([]byte(configs.SecretKey))
 }
 
 func ExtractTokenUser(e echo.Context) (int, string) {

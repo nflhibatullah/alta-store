@@ -1,40 +1,38 @@
-package product
+package category
 
 import (
 	"altastore/delivery/common"
 	"altastore/entities"
-	"altastore/repository/product"
+	"altastore/repository/category"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
 )
 
-type ProductController struct {
-	Repo product.ProductInterface
+type CategoryController struct {
+	Repo category.CategoryInterface
 }
 
-func NewProductControllers(prorep product.ProductInterface) *ProductController {
-	return &ProductController{Repo: prorep}
+func NewCategoryControllers(catrep category.CategoryInterface) *CategoryController {
+	return &CategoryController{Repo: catrep}
 }
 
-//CreateProduct
+//CreateCategory
 
-func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
+func (catcon CategoryController) PostCategoryCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		newProductReq := CreateProductRequestFormat{}
-		if err := c.Bind(&newProductReq); err != nil {
+		newCategoryReq := CreateCategoryRequestFormat{}
+		if err := c.Bind(&newCategoryReq); err != nil {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
-		newProduct := entities.Product{
-			Name:        newProductReq.Name,
-			Price:       newProductReq.Price,
-			Stock:       newProductReq.Stock,
-			Description: newProductReq.Description,
+		newCategory := entities.Category{
+			Name: newCategoryReq.Name,
+
 		}
 
-		_, err := procon.Repo.Create(newProduct)
+		_, err := catcon.Repo.Create(newCategory)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
 		}
@@ -43,11 +41,11 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 	}
 
 }
-func (procon ProductController) GetAllProductCtrl() echo.HandlerFunc {
+func (catcon CategoryController) GetAllCategoryCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 
-		product, err := procon.Repo.GetAll()
+		category, err := catcon.Repo.GetAll()
 
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
@@ -56,23 +54,23 @@ func (procon ProductController) GetAllProductCtrl() echo.HandlerFunc {
 		return c.JSON(
 			http.StatusOK, map[string]interface{}{
 				"message": "success",
-				"data":    product,
+				"data":    category,
 			},
 		)
 	}
 
 }
-func (procon ProductController) GetProductCtrl() echo.HandlerFunc {
+func (catcon CategoryController) GetCategoryCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 		id, _ := strconv.Atoi(c.Param("id"))
 
-		product, _ := procon.Repo.Get(id)
+		category, _ := catcon.Repo.Get(id)
 
-		if len(product) == 0 {
+		if len(category) == 0 {
 			return c.JSON(
 				http.StatusNotFound, map[string]interface{}{
-					"message": "Product not found",
+					"message": "Category not found",
 				},
 			)
 		}
@@ -80,20 +78,20 @@ func (procon ProductController) GetProductCtrl() echo.HandlerFunc {
 		return c.JSON(
 			http.StatusOK, map[string]interface{}{
 				"message": "succes",
-				"data":    product,
+				"data":    category,
 			},
 		)
 
 	}
 
 }
-func (procon ProductController) DeleteProductCtrl() echo.HandlerFunc {
+func (catcon CategoryController) DeleteCategoryCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 		var err error
 		id, err := strconv.Atoi(c.Param("id"))
 
-		_, err = procon.Repo.Delete(id)
+		_, err = catcon.Repo.Delete(id)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
 		}
@@ -106,22 +104,21 @@ func (procon ProductController) DeleteProductCtrl() echo.HandlerFunc {
 	}
 
 }
-func (procon ProductController) PutProductCtrl() echo.HandlerFunc {
+func (catcon CategoryController) PutCategoryCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		PutProductReq := PutProductRequestFormat{}
+		PutCategoryReq := PutCategoryRequestFormat{}
 		id, _ := strconv.Atoi(c.Param("id"))
-		err := c.Bind(&PutProductReq)
+		err := c.Bind(&PutCategoryReq)
 
-		newProduct := entities.Product{
-			Name:        PutProductReq.Name,
-			Description: PutProductReq.Description,
+		newCategory := entities.Category{
+			Name: PutCategoryReq.Name,
 		}
 		if id < 1 || err != nil {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
-		_, err = procon.Repo.Update(newProduct, id)
+		_, err = catcon.Repo.Update(newCategory, id)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
 		}

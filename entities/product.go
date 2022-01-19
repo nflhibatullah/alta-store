@@ -1,8 +1,12 @@
 package entities
 
-type Products struct {
+import "gorm.io/gorm"
+
+type Product struct {
+	gorm.Model
 	Name        string
 	Price       int
 	Stock       int
 	Description string
+	CategoryId  uint
 }

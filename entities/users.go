@@ -7,7 +7,7 @@ type User struct {
 	//USERID AUTO GENERATE
 	ID       uint
 	Email    string
-	Role     string `gorm:"default user"`
+	Role     string `gorm:"default:user"`
 	Name     string
 	Password string
 }

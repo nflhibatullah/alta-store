@@ -14,40 +14,37 @@ func NewProductRepo(db *gorm.DB) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-func (pr *ProductRepository) GetAll() ([]entities.Products, error) {
-	products := []entities.Products{}
+func (pr *ProductRepository) GetAll() ([]entities.Product, error) {
+	products := []entities.Product{}
 	pr.db.Find(&products)
 
 	return products, nil
 }
 
-func (pr *ProductRepository) Get(productId int) ([]entities.Products, error) {
-	product := []entities.Products{}
+func (pr *ProductRepository) Get(productId int) ([]entities.Product, error) {
+	product := []entities.Product{}
 	pr.db.Where("id = ?", productId).Find(&product)
 
 	return product, nil
 }
 
-func (pr *ProductRepository) Create(product entities.Products) (entities.Products, error) {
+func (pr *ProductRepository) Create(product entities.Product) (entities.Product, error) {
 	pr.db.Save(&product)
 	return product, nil
 }
 
 func (pr *ProductRepository) Delete(productId int) error {
-	product := entities.Products{}
+	product := entities.Product{}
 	pr.db.Find(&product, "id = ?", productId)
 	pr.db.Delete(&product)
 	return nil
 }
 
-func (pr *ProductRepository) Update(newProducts entities.Products, productId int) ([]entities.Products, error) {
-	product := []entities.Products{}
+func (pr *ProductRepository) Update(newProduct entities.Product, productId int) (entities.Product, error) {
+	product := entities.Product{}
 
-	pr.db.Where("id = ?", productId).Find(&product).Save(
-		map[string]interface{}{
-			"name": newProducts.Name, "price": newProducts.Price, "description": newProducts.Description,
-		},
-	)
+	pr.db.Find(&product, "id=?", productId)
+	pr.db.Model(&product).Updates(product)
 
 	return product, nil
 }

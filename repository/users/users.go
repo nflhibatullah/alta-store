@@ -2,7 +2,6 @@ package users
 
 import (
 	"altastore/entities"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -12,15 +11,6 @@ type UserRepository struct {
 
 func NewUsersRepo(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
-}
-func (ur *UserRepository) Login(name, password string) (entities.User, error) {
-	var user entities.User
-	getPass := entities.User{}
-	ur.db.Select("password").Where("Name = ?", name).Find(&getPass)
-	bcrypt.CompareHashAndPassword([]byte(getPass.Password), []byte(password))
-	ur.db.Where("Name = ?", name).Find(&user)
-
-	return user, nil
 }
 
 func (ur *UserRepository) GetAll() ([]entities.User, error) {
@@ -44,19 +34,34 @@ func (ur *UserRepository) Create(newUser entities.User) (entities.User, error) {
 	return newUser, nil
 }
 func (ur *UserRepository) Update(updateUser entities.User, userId int) (entities.User, error) {
-	user := entities.User{}
-	ur.db.Find(&user, "id=?", userId)
+	User := entities.User{}
+	ur.db.Find(&User, "id=?", userId)
+	ur.db.Model(&User).Updates(updateUser)
 
-	user.Name = updateUser.Name
-	user.Password = updateUser.Password
-
-	ur.db.Save(&user)
 	return updateUser, nil
 }
 
-func (ur *UserRepository) Delete(userId int) (entities.User, error) {
+func (ur *UserRepository) Delete(userId int) error {
 	user := entities.User{}
 	ur.db.Find(&user, "id=?", userId)
 	ur.db.Delete(&user)
+	return nil
+}
+
+func (ur *UserRepository) Login(email string) (entities.User, error) {
+	var user entities.User
+	err := ur.db.First(&user, "email = ?", email).Error
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+func (ur *UserRepository) GetDeleteData(id int) (entities.User, error) {
+	var user entities.User
+	err := ur.db.First(&user, "id = ?", id).Error
+	if err != nil {
+		return user, err
+	}
 	return user, nil
 }
