@@ -7,5 +7,5 @@ type CategoryInterface interface {
 	Get(categoryId int) ([]entities.Category, error)
 	Create(category entities.Category) (entities.Category, error)
 	Delete(categoryId int) (entities.Category, error)
-	Update(newCategory entities.Category, categoryId int) ([]entities.Category, error)
+	Update(newCategory entities.Category, categoryId int) (entities.Category, error)
 }

@@ -5,11 +5,9 @@ import (
 	"altastore/delivery/middlewares"
 	"altastore/entities"
 	"altastore/repository/users"
-	"net/http"
-	"strconv"
-
 	"github.com/labstack/gommon/log"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -94,12 +92,8 @@ func (uscon UsersController) GetAllUsersCtrl() echo.HandlerFunc {
 // GET /users/:id
 func (uscon UsersController) GetUserCtrl() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		id, err := strconv.Atoi(c.Param("id"))
-
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
-		}
-
+		id, _ := middlewares.ExtractTokenUser(c)
+		
 		user, err := uscon.Repo.Get(id)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())

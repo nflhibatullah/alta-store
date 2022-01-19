@@ -40,14 +40,11 @@ func (cr *CategoryRepository) Delete(categoryId int) (entities.Category, error) 
 	return category, nil
 }
 
-func (cr *CategoryRepository) Update(newCategory entities.Category, categoryId int) ([]entities.Category, error) {
-	category := []entities.Category{}
+func (cr *CategoryRepository) Update(newCategory entities.Category, categoryId int) (entities.Category, error) {
+	category := entities.Category{}
 
-	cr.db.Where("id = ?", categoryId).Find(&category).Save(
-		map[string]interface{}{
-			"name": newCategory.Name,
-		},
-	)
+	cr.db.Find(&category, "id=?", categoryId)
+	cr.db.Model(&category).Updates(newCategory)
 
 	return category, nil
 }

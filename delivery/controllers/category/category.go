@@ -29,7 +29,6 @@ func (catcon CategoryController) PostCategoryCtrl() echo.HandlerFunc {
 
 		newCategory := entities.Category{
 			Name: newCategoryReq.Name,
-
 		}
 
 		_, err := catcon.Repo.Create(newCategory)
@@ -118,8 +117,8 @@ func (catcon CategoryController) PutCategoryCtrl() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
-		_, err = catcon.Repo.Update(newCategory, id)
-		if err != nil {
+		result, _ := catcon.Repo.Update(newCategory, id)
+		if result.ID == 0 {
 			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
 		}
 

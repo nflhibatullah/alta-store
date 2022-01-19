@@ -2,7 +2,6 @@ package product
 
 import (
 	"altastore/entities"
-
 	"gorm.io/gorm"
 )
 
