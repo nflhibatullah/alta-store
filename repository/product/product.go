@@ -33,11 +33,11 @@ func (pr *ProductRepository) Create(product entities.Product) (entities.Product,
 	return product, nil
 }
 
-func (pr *ProductRepository) Delete(productId int) error {
+func (pr *ProductRepository) Delete(productId int) (entities.Product, error) {
 	product := entities.Product{}
 	pr.db.Find(&product, "id = ?", productId)
 	pr.db.Delete(&product)
-	return nil
+	return product, nil
 }
 
 func (pr *ProductRepository) Update(newProduct entities.Product, productId int) (entities.Product, error) {

@@ -10,11 +10,9 @@ import (
 )
 
 func RegisterProductPath(e *echo.Echo, pc *controller.ProductController)  {
-	e.POST("/product", pc.PostProductCtrl(), middlewares.CheckRole)
-	e.GET("/product", pc.GetAllProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
-	e.GET("/product/:id", pc.GetProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
-	e.DELETE(
-		"/product/:id", pc.DeleteProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole,
-	)
-	e.PUT("/product/:id", pc.PutProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.POST("/products", pc.PostProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.GET("/products", pc.GetAllProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.GET("/products/:id", pc.GetProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.DELETE("/products/:id", pc.DeleteProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.PUT("/products/:id", pc.PutProductCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
 }

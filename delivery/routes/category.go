@@ -10,11 +10,9 @@ import (
 )
 
 func RegisterCategoryPath(e *echo.Echo, cc *controller.CategoryController)  {
-	e.POST("/category", cc.PostCategoryCtrl(), middlewares.CheckRole)
-	e.GET("/category", cc.GetAllCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
-	e.GET("/category/:id", cc.GetCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
-	e.DELETE(
-		"/category/:id", cc.DeleteCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole,
-	)
-	e.PUT("/category/:id", cc.PutCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.POST("/categories", cc.PostCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.GET("/categories", cc.GetAllCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.GET("/categories/:id", cc.GetCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.DELETE("/categories/:id", cc.DeleteCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
+	e.PUT("/categories/:id", cc.PutCategoryCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRole)
 }

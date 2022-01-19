@@ -33,6 +33,7 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 			Price:       newProductReq.Price,
 			Stock:       newProductReq.Stock,
 			Description: newProductReq.Description,
+			CategoryID: newProductReq.CategoryID,
 		}
 
 		_, err := procon.Repo.Create(newProduct)
