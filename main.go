@@ -3,35 +3,44 @@ package main
 import (
 	"altastore/configs"
 	"altastore/delivery/controllers/category"
-	"altastore/delivery/controllers/product"
-	"altastore/delivery/controllers/users"
+
+	pc "altastore/delivery/controllers/product"
+	tc "altastore/delivery/controllers/transaction"
+	uc "altastore/delivery/controllers/users"
 	"altastore/delivery/routes"
-	categoryRepo "altastore/repository/category"
-	productRepo "altastore/repository/product"
-	userRepo "altastore/repository/users"
+	cr "altastore/repository/category"
+	pr "altastore/repository/product"
+	tr "altastore/repository/transaction"
+	ur "altastore/repository/users"
 	"altastore/utils"
-	"fmt"
+
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 )
 
 func main() {
 	config := configs.GetConfig()
+
 	db := utils.InitDB(config)
+
+	utils.InitialMigrate(db)
+
+	userRepo := ur.NewUsersRepo(db)
+	transactionRepo := tr.NewTransactionRepository(db)
+	productRepo := pr.NewProductRepo(db)
+	categoryRepo := cr.NewCategoryRepo(db)
+
+	userCtrl := uc.NewUsersControllers(userRepo)
+	transactionController := tc.NewTransactionController(transactionRepo)
+	productController := pc.NewProductControllers(productRepo)
+	categoryController := category.NewCategoryControllers(categoryRepo)
 
 	e := echo.New()
 
-	userRepo := userRepo.NewUsersRepo(db)
-	userCtrl := user.NewUsersControllers(userRepo)
+	routes.RegisterTransactionPath(e, transactionController)
+	routes.RegisterUserPath(e, userCtrl)
+	routes.RegisterProductPath(e, productController)
+	routes.RegisterCategoryPath(e, categoryController)
 
-	productRepo := productRepo.NewProductRepo(db)
-	productCtrl := product.NewProductControllers(productRepo)
+	e.Logger.Fatal(e.Start(":" + config.Port))
 
-	categoryRepo := categoryRepo.NewCategoryRepo(db)
-	categoryCtrl := category.NewCategoryControllers(categoryRepo)
-
-	routes.RegisterPath(e, userCtrl, productCtrl, categoryCtrl)
-
-	address := fmt.Sprintf("localhost:%d", config.Port)
-	log.Fatal(e.Start(address))
 }

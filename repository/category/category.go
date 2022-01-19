@@ -2,6 +2,7 @@ package category
 
 import (
 	"altastore/entities"
+
 	"gorm.io/gorm"
 )
 
@@ -32,11 +33,11 @@ func (cr *CategoryRepository) Create(category entities.Category) (entities.Categ
 	return category, nil
 }
 
-func (cr *CategoryRepository) Delete(categoryId int) error {
+func (cr *CategoryRepository) Delete(categoryId int) (entities.Category, error) {
 	category := entities.Category{}
 	cr.db.Find(&category, "id = ?", categoryId)
 	cr.db.Delete(&category)
-	return nil
+	return category, nil
 }
 
 func (cr *CategoryRepository) Update(newCategory entities.Category, categoryId int) ([]entities.Category, error) {

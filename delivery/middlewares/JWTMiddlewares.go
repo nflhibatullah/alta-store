@@ -1,10 +1,11 @@
 package middlewares
 
 import (
-	"altastore/configs"
+	"altastore/constant"
+	"time"
+
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
-	"time"
 )
 
 func CreateToken(userId int, role string) (string, error) {
@@ -14,7 +15,7 @@ func CreateToken(userId int, role string) (string, error) {
 	claims["userId"] = int(userId)
 	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(configs.SecretKey))
+	return token.SignedString([]byte(constant.JWT_SECRET_KEY))
 }
 
 func ExtractTokenUser(e echo.Context) (int, string) {

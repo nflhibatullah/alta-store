@@ -5,10 +5,11 @@ import (
 	"altastore/delivery/middlewares"
 	"altastore/entities"
 	"altastore/repository/users"
-	"github.com/labstack/gommon/log"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strconv"
+
+	"github.com/labstack/gommon/log"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo/v4"
 )

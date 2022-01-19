@@ -5,7 +5,7 @@ type CreateProductRequestFormat struct {
 	Price       int    `json:"price" form:"price"`
 	Stock       int    `json:"stock" form:"stock"`
 	Description string `json:"description" form:"description"`
-	CategoryID  int    `json:"categoryID" form:"categoryID"`
+	CategoryID  uint   `json:"category_id" form:"category_id"`
 }
 
 type PutProductRequestFormat struct {
