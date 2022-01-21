@@ -2,6 +2,7 @@ package users
 
 import (
 	"altastore/entities"
+
 	"gorm.io/gorm"
 )
 
@@ -22,7 +23,7 @@ func (ur *UserRepository) GetAll() ([]entities.User, error) {
 
 func (ur *UserRepository) Get(userId int) (entities.User, error) {
 	user := entities.User{}
-	ur.db.Find(&user, userId)
+	ur.db.Preload("Carts").Find(&user, userId)
 	return user, nil
 }
 

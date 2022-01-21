@@ -1,8 +1,9 @@
 package middlewares
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 //func CheckRole(next echo.Group) echo.HandlerFunc {
@@ -22,9 +23,9 @@ import (
 
 func CheckRole(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		_, role := ExtractTokenUser(c)
+		user, _ := ExtractTokenUser(c)
 
-		if role == "user" {
+		if user.Role == "user" {
 			return c.JSON(
 				http.StatusUnauthorized, map[string]interface{}{
 					"Message": "Unauthorized",

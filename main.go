@@ -2,11 +2,13 @@ package main
 
 import (
 	"altastore/configs"
-	"altastore/delivery/controllers/category"
+	ctc "altastore/delivery/controllers/cart"
+	cc "altastore/delivery/controllers/category"
 	pc "altastore/delivery/controllers/product"
 	tc "altastore/delivery/controllers/transaction"
 	uc "altastore/delivery/controllers/users"
 	"altastore/delivery/routes"
+	ctr "altastore/repository/cart"
 	cr "altastore/repository/category"
 	pr "altastore/repository/product"
 	tr "altastore/repository/transaction"
@@ -27,11 +29,13 @@ func main()  {
 	transactionRepo := tr.NewTransactionRepository(db)
 	productRepo := pr.NewProductRepo(db)
 	categoryRepo := cr.NewCategoryRepo(db)
+	cartRepo := ctr.NewCartRepository(db)
 
 	userCtrl := uc.NewUsersControllers(userRepo)
 	transactionController := tc.NewTransactionController(transactionRepo)
 	productController := pc.NewProductControllers(productRepo)
-	categoryController := category.NewCategoryControllers(categoryRepo)
+	categoryController := cc.NewCategoryControllers(categoryRepo)
+	cartController := ctc.NewCartController(cartRepo)
 
 	e := echo.New()
 
@@ -39,6 +43,7 @@ func main()  {
 	routes.RegisterUserPath(e, userCtrl)
 	routes.RegisterProductPath(e, productController)
 	routes.RegisterCategoryPath(e, categoryController)
+	routes.RegisterCartPath(e, cartController)
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
 }

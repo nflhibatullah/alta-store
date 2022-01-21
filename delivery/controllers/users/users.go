@@ -6,7 +6,6 @@ import (
 	"altastore/entities"
 	"altastore/repository/users"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/gommon/log"
 	"golang.org/x/crypto/bcrypt"
@@ -39,7 +38,7 @@ func (uscon UsersController) Login() echo.HandlerFunc {
 		var token string
 
 		if hash {
-			token, _ = middlewares.CreateToken(int(user.ID), user.Role)
+			token, _ = middlewares.CreateToken(int(user.ID), user.Role, user.Email)
 		}
 
 		return c.JSON(http.StatusOK, token)
@@ -94,23 +93,17 @@ func (uscon UsersController) GetAllUsersCtrl() echo.HandlerFunc {
 // GET /users/:id
 func (uscon UsersController) GetUserCtrl() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		id, err := strconv.Atoi(c.Param("id"))
-
+		userToken, err := middlewares.ExtractTokenUser(c) 
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
-		user, err := uscon.Repo.Get(id)
+		user, err := uscon.Repo.Get(userToken.ID)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 		}
 
-		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "success",
-				"data":    user,
-			},
-		)
+		return c.JSON(http.StatusOK, common.SuccessResponse(user))
 	}
 
 }
@@ -119,7 +112,7 @@ func (uscon UsersController) GetUserCtrl() echo.HandlerFunc {
 func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		id, _ := middlewares.ExtractTokenUser(c)
+		user, _ := middlewares.ExtractTokenUser(c)
 
 		updateUserReq := PutUserRequestFormat{}
 		if err := c.Bind(&updateUserReq); err != nil {
@@ -134,7 +127,7 @@ func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 			Password: string(hash),
 		}
 
-		if _, err := uscon.Repo.Update(updateUser, id); err != nil {
+		if _, err := uscon.Repo.Update(updateUser, user.ID); err != nil {
 			log.Error(err)
 			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 		}
@@ -147,13 +140,13 @@ func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 func (uscon UsersController) DeleteUserCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		id, _ := middlewares.ExtractTokenUser(c)
+		userjwt, _ := middlewares.ExtractTokenUser(c)
 		deleteUserReq := DeleteRequestFormat{}
 		if err := c.Bind(&deleteUserReq); err != nil {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
-		user, err := uscon.Repo.GetDeleteData(id)
+		user, err := uscon.Repo.GetDeleteData(userjwt.ID)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, "User tidak ditemukan")
 		}
@@ -163,7 +156,7 @@ func (uscon UsersController) DeleteUserCtrl() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, "Ada kesalahan dalam kredensial")
 		}
 
-		uscon.Repo.Delete(id)
+		uscon.Repo.Delete(userjwt.ID)
 
 		return c.JSON(http.StatusOK, "Berhasil menghapus user")
 

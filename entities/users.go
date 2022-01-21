@@ -10,4 +10,5 @@ type User struct {
 	Role     string `gorm:"default:user"`
 	Name     string
 	Password string
+	Transaction []Transaction
 }
