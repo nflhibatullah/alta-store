@@ -21,6 +21,7 @@ import (
 	"altastore/utils"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -46,8 +47,10 @@ func main() {
 
 	middlewares.LogMiddleware(e)
 
+	e.Pre(middleware.RemoveTrailingSlash())
+
 	e.Validator = &common.CustomValidator{Validator: validator.New()}
-	
+
 	routes.RegisterTransactionPath(e, transactionController)
 	routes.RegisterUserPath(e, userCtrl)
 	routes.RegisterProductPath(e, productController)
