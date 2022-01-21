@@ -1,8 +1,7 @@
 package transaction
 
 type PostCustumerRequest struct {
-	TotalPrice float64 `json:"total_price"`
-	Products []Item `json:"products"`
+	Products []Item `json:"products" validate:"required"`
 }
 
 type Item struct {

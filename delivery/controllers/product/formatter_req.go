@@ -15,3 +15,4 @@ type PutProductRequestFormat struct {
 	Description string `json:"description" form:"description"`
 	CategoryID  uint   `json:"category_id" form:"category_id"`
 }
+

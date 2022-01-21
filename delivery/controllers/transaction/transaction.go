@@ -9,6 +9,7 @@ import (
 	repository "altastore/repository/transaction"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,22 +29,25 @@ func (tc TransactionController) Create(c echo.Context) error {
 
 	// bind request data
 	if err := c.Bind(&transactionRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 
+	if err := c.Validate(&transactionRequest); err != nil {
+      return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+    }
+
 	user, _ := middlewares.ExtractTokenUser(c)
-	invoiceId := uuid.New().String()
+	invoiceId := strings.ToUpper(strings.ReplaceAll(uuid.New().String(), "-", ""))
 
 	// create data to db
 	transaction := entities.Transaction{
-		UserID:        uint(user.ID),
+		UserID: uint(user.ID),
 		InvoiceID:     invoiceId,
-		TotalPrice:    transactionRequest.TotalPrice,
 	}
 
 	transactionData, err := tc.TransactionRepository.Create(transaction)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 
 	// store Detail Transaction Data 
@@ -56,29 +60,80 @@ func (tc TransactionController) Create(c echo.Context) error {
 		_, err := tc.TransactionRepository.StoreItemProduct(int(transactionData.ID), product)
 
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 	}
 
-	// get created & stored data from db
+	// get data from db
 	transactionDb, err := tc.TransactionRepository.GetByTransaction(user.ID, int(transactionData.ID))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
+
+	var totalPrice float64 = 0
+
+	products := []ProductTransaction{}
+
+	for _, p := range transactionDb.TransactionDetails {
+		products = append(products, ProductTransaction{
+			ProductID:   int(p.ProductID),
+			ProductName: p.Product.Name,
+			ProductPrice: float64(p.Product.Price),
+			TotalProductPrice: float64(p.Product.Price) * float64(p.Quantity),
+			Quantity:    p.Quantity,
+			Category:    p.Product.Category.Name,
+		})
+
+		totalPrice += (float64(p.Product.Price) * float64(p.Quantity))
+
+		// update product stock
+		ok := tc.TransactionRepository.UpdateStockProduct(int(p.ProductID), p.Product.Stock - p.Quantity); 
+		if !ok {
+			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
+		}
+
+		// delete product in cart
+		ok = tc.TransactionRepository.GetProductInCart(user.ID, int(p.ProductID))
+		if ok {
+			tc.TransactionRepository.DeleteProductInCart(user.ID, int(p.ProductID))
+		}
+	}
+
+	// assign total price
+	transactionDb.TotalPrice = totalPrice
 
 	// send data to payment gateway
 	transactionSuccess, err := helper.CreateInvoice(transactionDb, user.Email)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 
 	// update data to db
 	transactionUpdate, err := tc.TransactionRepository.Update(int(transactionData.ID), transactionSuccess)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
+	}
+	
+	// get data from db
+	transactionGet, err := tc.TransactionRepository.GetByTransaction(user.ID, int(transactionUpdate.ID))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 
-	return c.JSON(http.StatusOK, common.SuccessResponse(transactionUpdate))
+	// formatting response
+	data := TransactionResponse{
+		ID:            transactionGet.ID,
+		InvoiceID:     transactionGet.InvoiceID,
+		PaymentMethod: transactionGet.PaymentMethod,
+		PaymentUrl:    transactionGet.PaymentUrl,
+		BankID:        transactionGet.BankID,
+		PaidAt:        transactionGet.PaidAt,
+		TotalPrice:    transactionGet.TotalPrice,
+		Status: transactionGet.Status,
+		Products:      products,
+	}
+
+	return c.JSON(http.StatusOK, common.SuccessResponse(data))
 }
 
 func (tc TransactionController) Callback(c echo.Context) error {
@@ -102,6 +157,16 @@ func (tc TransactionController) Callback(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 	}
 
+	if callbackRequest.Status != "PAID" {
+		for _, p := range transactionData.TransactionDetails {
+			// update product stock
+			ok := tc.TransactionRepository.UpdateStockProduct(int(p.ProductID), p.Product.Stock + p.Quantity); 
+			if !ok {
+				return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
+			}
+		}
+	}
+
 	var data entities.Transaction
 	data.PaidAt, _ = time.Parse(time.RFC3339, callbackRequest.PaidAt)
 	data.PaymentMethod = callbackRequest.PaymentMethod
@@ -120,7 +185,7 @@ func (tc TransactionController) GetAll(c echo.Context) error {
 
 	user, err := middlewares.ExtractTokenUser(c)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, common.ErrorResponse(http.StatusUnauthorized, err.Error()))
+		return c.JSON(http.StatusUnauthorized, common.NewBadRequestResponse())
 	}
 
 	transactions, err := tc.TransactionRepository.GetAll()
@@ -133,7 +198,34 @@ func (tc TransactionController) GetAll(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 	}
 
-	return c.JSON(http.StatusOK, common.SuccessResponse(transactions))
+	transactionDatas := []TransactionResponse{}
+
+	for _, td := range transactions {
+		products := []ProductTransaction{}
+
+		for _, p := range td.TransactionDetails {
+			products = append(products, ProductTransaction{
+				ProductID:   int(p.ProductID),
+				ProductName: p.Product.Name,
+				Quantity:    p.Quantity,
+				Category:    p.Product.Category.Name,
+			})
+		}
+
+		transactionDatas = append(transactionDatas, TransactionResponse{
+			ID:            td.ID,
+			InvoiceID:     td.InvoiceID,
+			PaymentMethod: td.PaymentMethod,
+			PaymentUrl:    td.PaymentUrl,
+			BankID:        td.BankID,
+			PaidAt:        td.PaidAt,
+			TotalPrice:    td.TotalPrice,
+			Status: td.Status,
+			Products:      products,
+		})
+	}
+
+	return c.JSON(http.StatusOK, common.SuccessResponse(transactionDatas))
 }
 
 func (tc TransactionController) GetByTransaction(c echo.Context) error {
@@ -153,5 +245,28 @@ func (tc TransactionController) GetByTransaction(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 	}
 
-	return c.JSON(http.StatusOK, common.SuccessResponse(transaction))
+	products := []ProductTransaction{}
+
+	for _, p := range transaction.TransactionDetails {
+		products = append(products, ProductTransaction{
+			ProductID:   int(p.ProductID),
+			ProductName: p.Product.Name,
+			Quantity:    p.Quantity,
+			Category:    p.Product.Category.Name,
+		})
+	}
+
+	data := TransactionResponse{
+		ID:            transaction.ID,
+		InvoiceID:     transaction.InvoiceID,
+		PaymentMethod: transaction.PaymentMethod,
+		PaymentUrl:    transaction.PaymentUrl,
+		BankID:        transaction.BankID,
+		PaidAt:        transaction.PaidAt,
+		TotalPrice:    transaction.TotalPrice,
+		Status: transaction.Status,
+		Products:      products,
+	}
+
+	return c.JSON(http.StatusOK, common.SuccessResponse(data))
 }

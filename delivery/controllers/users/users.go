@@ -63,12 +63,12 @@ func (uscon UsersController) PostUserCtrl() echo.HandlerFunc {
 			Password: string(hash),
 		}
 
-		res, err := uscon.Repo.Create(newUser)
+		_, err := uscon.Repo.Create(newUser)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "email telah terdaftar"))
 		}
 
-		return c.JSON(http.StatusOK, common.SuccessResponse(res))
+		return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
 	}
 
 }

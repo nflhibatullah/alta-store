@@ -8,12 +8,13 @@ import (
 	"altastore/utils"
 	"bytes"
 	"encoding/json"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateProduct(t *testing.T) {
@@ -453,4 +454,4 @@ func TestCreateProduct(t *testing.T) {
 	//			assert.NotNil(t, rec.Body)
 	//		},
 	//	)
-	//}
+	}

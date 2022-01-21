@@ -5,6 +5,7 @@ import (
 	"altastore/delivery/common"
 	ctc "altastore/delivery/controllers/cart"
 	cc "altastore/delivery/controllers/category"
+	"altastore/delivery/middlewares"
 
 	"github.com/go-playground/validator/v10"
 
@@ -20,6 +21,7 @@ import (
 	"altastore/utils"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -42,7 +44,13 @@ func main() {
 	cartController := ctc.NewCartController(cartRepo)
 
 	e := echo.New()
+
+	middlewares.LogMiddleware(e)
+
+	e.Pre(middleware.RemoveTrailingSlash())
+
 	e.Validator = &common.CustomValidator{Validator: validator.New()}
+
 	routes.RegisterTransactionPath(e, transactionController)
 	routes.RegisterUserPath(e, userCtrl)
 	routes.RegisterProductPath(e, productController)

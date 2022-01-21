@@ -12,8 +12,8 @@ import (
 func RegisterCartPath(e *echo.Echo, cc *controller.CartController) {
 
 	e.GET("/carts", cc.GetAll, middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRoleUser)
-	e.POST("/carts", cc.Create, middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRoleUser)
+	e.POST("/carts/:productId", cc.Create, middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRoleUser)
 	e.PUT("/carts/:productId", cc.Update, middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRoleUser)
-	e.DELETE("/carts/:productId", cc.Update, middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRoleUser)
+	e.DELETE("/carts/:productId", cc.Delete, middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRoleUser)
 
 }

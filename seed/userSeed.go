@@ -2,6 +2,7 @@ package seed
 
 import (
 	"altastore/entities"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
