@@ -2,7 +2,6 @@ package product
 
 import (
 	"altastore/entities"
-
 	"gorm.io/gorm"
 )
 
@@ -44,7 +43,7 @@ func (pr *ProductRepository) Update(newProduct entities.Product, productId int) 
 	product := entities.Product{}
 
 	pr.db.Find(&product, "id=?", productId)
-	pr.db.Model(&product).Updates(product)
+	pr.db.Model(&product).Updates(newProduct)
 
 	return product, nil
 }

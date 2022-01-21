@@ -4,6 +4,7 @@ import (
 	"altastore/delivery/common"
 	"altastore/entities"
 	"altastore/repository/product"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -33,7 +34,7 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 			Price:       newProductReq.Price,
 			Stock:       newProductReq.Stock,
 			Description: newProductReq.Description,
-			CategoryID: newProductReq.CategoryID,
+			CategoryID:  newProductReq.CategoryID,
 		}
 
 		_, err := procon.Repo.Create(newProduct)
@@ -115,16 +116,21 @@ func (procon ProductController) PutProductCtrl() echo.HandlerFunc {
 		id, _ := strconv.Atoi(c.Param("id"))
 		err := c.Bind(&PutProductReq)
 
+		fmt.Println(PutProductReq.CategoryID)
+
 		newProduct := entities.Product{
 			Name:        PutProductReq.Name,
+			Stock:       PutProductReq.Stock,
+			Price:       PutProductReq.Price,
 			Description: PutProductReq.Description,
+			CategoryID:  PutProductReq.CategoryID,
 		}
 		if id < 1 || err != nil {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
-		_, err = procon.Repo.Update(newProduct, id)
-		if err != nil {
+		result, _ := procon.Repo.Update(newProduct, id)
+		if result.ID == 0 {
 			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
 		}
 

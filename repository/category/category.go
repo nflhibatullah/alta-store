@@ -2,7 +2,6 @@ package category
 
 import (
 	"altastore/entities"
-
 	"gorm.io/gorm"
 )
 
@@ -24,30 +23,34 @@ func (cr *CategoryRepository) GetAll() ([]entities.Category, error) {
 func (cr *CategoryRepository) Get(categoryId int) ([]entities.Category, error) {
 	category := []entities.Category{}
 	cr.db.Where("id = ?", categoryId).Find(&category)
-
 	return category, nil
 }
 
 func (cr *CategoryRepository) Create(category entities.Category) (entities.Category, error) {
-	cr.db.Save(&category)
+	err := cr.db.Save(&category).Error
+	if err != nil {
+		return category, err
+	}
 	return category, nil
 }
 
 func (cr *CategoryRepository) Delete(categoryId int) (entities.Category, error) {
 	category := entities.Category{}
-	cr.db.Find(&category, "id = ?", categoryId)
-	cr.db.Delete(&category)
+	err := cr.db.First(&category, "id = ?", categoryId).Delete(&category).Error
+	if err != nil {
+		return category, err
+	}
 	return category, nil
 }
 
-func (cr *CategoryRepository) Update(newCategory entities.Category, categoryId int) ([]entities.Category, error) {
-	category := []entities.Category{}
+func (cr *CategoryRepository) Update(newCategory entities.Category, categoryId int) (entities.Category, error) {
+	category := entities.Category{}
 
-	cr.db.Where("id = ?", categoryId).Find(&category).Save(
-		map[string]interface{}{
-			"name": newCategory.Name,
-		},
-	)
+	err := cr.db.First(&category, "id=?", categoryId).Error
+	if err != nil {
+		return category, err
+	}
+	cr.db.Model(&category).Updates(newCategory)
 
 	return category, nil
 }

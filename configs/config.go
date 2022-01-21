@@ -36,7 +36,7 @@ func GetConfig() *AppConfig {
 }
 
 func initConfig() *AppConfig {
-	
+
 	err := godotenv.Load()
 
 	if err != nil {

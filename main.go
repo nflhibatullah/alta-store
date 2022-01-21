@@ -2,8 +2,12 @@ package main
 
 import (
 	"altastore/configs"
+	"altastore/delivery/common"
 	ctc "altastore/delivery/controllers/cart"
 	cc "altastore/delivery/controllers/category"
+
+	"github.com/go-playground/validator/v10"
+
 	pc "altastore/delivery/controllers/product"
 	tc "altastore/delivery/controllers/transaction"
 	uc "altastore/delivery/controllers/users"
@@ -18,11 +22,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func main()  {
+func main() {
 	config := configs.GetConfig()
 
 	db := utils.InitDB(config)
-	
+
 	utils.InitialMigrate(db)
 
 	userRepo := ur.NewUsersRepo(db)
@@ -38,7 +42,7 @@ func main()  {
 	cartController := ctc.NewCartController(cartRepo)
 
 	e := echo.New()
-
+	e.Validator = &common.CustomValidator{Validator: validator.New()}
 	routes.RegisterTransactionPath(e, transactionController)
 	routes.RegisterUserPath(e, userCtrl)
 	routes.RegisterProductPath(e, productController)
@@ -46,4 +50,5 @@ func main()  {
 	routes.RegisterCartPath(e, cartController)
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
+
 }

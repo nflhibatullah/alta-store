@@ -23,21 +23,21 @@ func (catcon CategoryController) PostCategoryCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 		newCategoryReq := CreateCategoryRequestFormat{}
-		if err := c.Bind(&newCategoryReq); err != nil {
-			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
+		c.Bind(&newCategoryReq)
+		if err := c.Validate(newCategoryReq); err != nil {
+			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "Kesalahan dalam input"))
 		}
 
 		newCategory := entities.Category{
 			Name: newCategoryReq.Name,
-
 		}
 
-		_, err := catcon.Repo.Create(newCategory)
+		category, err := catcon.Repo.Create(newCategory)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
+			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "Kategori yang diinput sudah ada"))
 		}
 
-		return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
+		return c.JSON(http.StatusOK, common.SuccessResponse(category))
 	}
 
 }
@@ -45,17 +45,14 @@ func (catcon CategoryController) GetAllCategoryCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 
-		category, err := catcon.Repo.GetAll()
+		category, _ := catcon.Repo.GetAll()
 
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
+		if len(category) == 0 {
+			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "Kategori tidak ditemukan"))
 		}
 
 		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "success",
-				"data":    category,
-			},
+			http.StatusOK, common.SuccessResponse(category),
 		)
 	}
 
@@ -68,19 +65,10 @@ func (catcon CategoryController) GetCategoryCtrl() echo.HandlerFunc {
 		category, _ := catcon.Repo.Get(id)
 
 		if len(category) == 0 {
-			return c.JSON(
-				http.StatusNotFound, map[string]interface{}{
-					"message": "Category not found",
-				},
-			)
+			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "category tidak ditemukan"))
 		}
 
-		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "succes",
-				"data":    category,
-			},
-		)
+		return c.JSON(http.StatusOK, common.SuccessResponse(category))
 
 	}
 
@@ -88,18 +76,17 @@ func (catcon CategoryController) GetCategoryCtrl() echo.HandlerFunc {
 func (catcon CategoryController) DeleteCategoryCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		var err error
-		id, err := strconv.Atoi(c.Param("id"))
 
-		_, err = catcon.Repo.Delete(id)
+		id, _ := strconv.Atoi(c.Param("id"))
+
+		_, err := catcon.Repo.Delete(id)
+
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
+			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "Kategori tidak ditemukan"))
 		}
 
 		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "success",
-			},
+			http.StatusOK, common.SuccessResponse("Berhasil menghapus category"),
 		)
 	}
 
@@ -109,21 +96,20 @@ func (catcon CategoryController) PutCategoryCtrl() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		PutCategoryReq := PutCategoryRequestFormat{}
 		id, _ := strconv.Atoi(c.Param("id"))
-		err := c.Bind(&PutCategoryReq)
-
+		c.Bind(&PutCategoryReq)
+		if err := c.Validate(&PutCategoryReq); err != nil {
+			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "Kesalahan dalam input"))
+		}
 		newCategory := entities.Category{
 			Name: PutCategoryReq.Name,
 		}
-		if id < 1 || err != nil {
-			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
-		}
 
-		_, err = catcon.Repo.Update(newCategory, id)
+		result, err := catcon.Repo.Update(newCategory, id)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
+			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "Kategori not found"))
 		}
 
-		return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
+		return c.JSON(http.StatusOK, common.SuccessResponse(result))
 	}
 
 }
