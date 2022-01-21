@@ -35,8 +35,9 @@ func CreateInvoice(transaction entities.Transaction, email string) (entities.Tra
 	}
 
 	transactionSuccess := entities.Transaction{
-		PaymentUrl:         resp.InvoiceURL,
-		Status:             resp.Status,
+		PaymentUrl: resp.InvoiceURL,
+		TotalPrice: resp.Amount,
+		Status: resp.Status,
 	}
 
 	return transactionSuccess, nil

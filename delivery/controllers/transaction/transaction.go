@@ -84,7 +84,7 @@ func (tc TransactionController) Create(c echo.Context) error {
 			Category:    p.Product.Category.Name,
 		})
 
-		totalPrice += float64(p.Product.Price) * float64(p.Quantity)
+		totalPrice += (float64(p.Product.Price) * float64(p.Quantity))
 
 		// update product stock
 		ok := tc.TransactionRepository.UpdateStockProduct(int(p.ProductID), p.Product.Stock - p.Quantity); 
@@ -114,7 +114,7 @@ func (tc TransactionController) Create(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 	
-	// update data to db
+	// get data from db
 	transactionGet, err := tc.TransactionRepository.GetByTransaction(user.ID, int(transactionUpdate.ID))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
