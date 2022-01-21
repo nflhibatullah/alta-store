@@ -5,8 +5,10 @@ import (
 	"altastore/delivery/middlewares"
 	"altastore/entities"
 	"altastore/repository/users"
-	"golang.org/x/crypto/bcrypt"
+
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo/v4"
 )
@@ -36,7 +38,7 @@ func (uscon UsersController) Login() echo.HandlerFunc {
 		var token string
 
 		if hash {
-			token, _ = middlewares.CreateToken(int(user.ID), user.Role)
+			token, _ = middlewares.CreateToken(int(user.ID), user.Role, user.Email)
 		}
 
 		return c.JSON(http.StatusOK, common.SuccessResponse(token))
@@ -87,23 +89,27 @@ func (uscon UsersController) GetAllUsersCtrl() echo.HandlerFunc {
 // GET /users/:id
 func (uscon UsersController) GetUserCtrl() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		id, _ := middlewares.ExtractTokenUser(c)
-
-		user, _ := uscon.Repo.Get(id)
-		if user.ID == 0 {
-			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "User tidak ditemukan"))
+		userToken, err := middlewares.ExtractTokenUser(c) 
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
 
+		user, err := uscon.Repo.Get(userToken.ID)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "User tidak ditemukan"))
+			
+		}
+		
 		return c.JSON(http.StatusOK, common.SuccessResponse(user))
-	}
 
+	}
 }
 
 // PUT /users/:id
 func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		id, _ := middlewares.ExtractTokenUser(c)
+		user, _ := middlewares.ExtractTokenUser(c)
 
 		updateUserReq := PutUserRequestFormat{}
 		if err := c.Bind(&updateUserReq); err != nil {
@@ -118,24 +124,23 @@ func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 			Password: string(hash),
 		}
 
-		user, err := uscon.Repo.Update(updateUser, id)
-		if err != nil {
+		if _, err := uscon.Repo.Update(updateUser, user.ID); err != nil {
 			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "User not found"))
 		}
-		return c.JSON(http.StatusOK, common.SuccessResponse(user))
+		
+	return c.JSON(http.StatusOK, common.SuccessResponse(user))
 	}
-
 }
 
 // DELETE /users/:id
 func (uscon UsersController) DeleteUserCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		id, _ := middlewares.ExtractTokenUser(c)
+		userjwt, _ := middlewares.ExtractTokenUser(c)
 		deleteUserReq := DeleteRequestFormat{}
 		c.Bind(&deleteUserReq)
 
-		user, err := uscon.Repo.GetDeleteData(id)
+		user, err := uscon.Repo.GetDeleteData(userjwt.ID)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, common.ErrorResponse(404, "User tidak ditemukan"))
 		}
@@ -146,7 +151,7 @@ func (uscon UsersController) DeleteUserCtrl() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "Kesalahan pada kredensial"))
 		}
 
-		uscon.Repo.Delete(id)
+		uscon.Repo.Delete(userjwt.ID)
 
 		return c.JSON(http.StatusOK, common.SuccessResponse("Berhasil menghapus user"))
 

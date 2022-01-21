@@ -1,7 +1,9 @@
 package entities
 
-import "gorm.io/gorm"
-import _ "github.com/asaskevich/govalidator"
+import (
+	_ "github.com/asaskevich/govalidator"
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
@@ -11,4 +13,5 @@ type User struct {
 	Role     string `gorm:"default:user"`
 	Name     string `valid:"required"`
 	Password string `valid:"required"`
+	Transaction []Transaction
 }

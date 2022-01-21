@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"altastore/constant"
 	"os"
 	"sync"
 
@@ -50,6 +51,9 @@ func initConfig() *AppConfig {
 	defaultConfig.Database.Port = os.Getenv("DB_PORT")
 	defaultConfig.Database.Username = os.Getenv("DB_USERNAME")
 	defaultConfig.Database.Password = os.Getenv("DB_PASSWORD")
+
+	constant.JWT_SECRET_KEY = os.Getenv("JWT_SECRET_KEY")
+	constant.XENDIT_CALLBACK_TOKEN = os.Getenv("XENDIT_CALLBACK_TOKEN")
 
 	return &defaultConfig
 }

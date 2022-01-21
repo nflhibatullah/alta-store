@@ -3,21 +3,34 @@ package helper
 import (
 	"altastore/entities"
 	"os"
-	"time"
+	"strings"
 
 	"github.com/xendit/xendit-go"
 	"github.com/xendit/xendit-go/invoice"
 )
 
 
-func CreateInvoice(transaction entities.Transaction) (entities.Transaction, error) {
+func CreateInvoice(transaction entities.Transaction, email string) (entities.Transaction, error) {
 	xendit.Opt.SecretKey = os.Getenv("XENDIT_SECRET_KEY")
 
+	items := []xendit.InvoiceItem{}
+
+	for _, item := range transaction.TransactionDetails {
+		items = append(items, xendit.InvoiceItem{
+			Name: item.Product.Name,
+			Quantity: item.Quantity,
+			Price: float64(item.Product.Price),
+		})
+	}
+
+	inv := strings.ToUpper(strings.ReplaceAll(transaction.InvoiceID, "-", ""))
+
 	data := invoice.CreateParams{
-		ExternalID:  "invoice-" + time.Now().String(),
-		Amount:      transaction.TotalPrice,
-		PayerEmail:  "customer@customer.com",
-		Description: "invoice  #1",
+		ExternalID:                     inv,
+		Amount:                         transaction.TotalPrice,
+		Description:                    "Invoice " + inv + " for " + email,
+		PayerEmail:                     email,
+		Items:                          items,
 	}
 
 	resp, err := invoice.Create(&data)
@@ -26,12 +39,8 @@ func CreateInvoice(transaction entities.Transaction) (entities.Transaction, erro
 	}
 
 	transactionSuccess := entities.Transaction{
-		UserID:        transaction.UserID,
-		InvoiceID:     resp.ExternalID,
-		PaymentMethod: resp.PaymentMethod,
-		PaymentUrl:    resp.InvoiceURL,
-		TotalPrice:    resp.Amount,
-		Status:        resp.Status,
+		PaymentUrl:         resp.InvoiceURL,
+		Status:             resp.Status,
 	}
 
 	return transactionSuccess, nil
