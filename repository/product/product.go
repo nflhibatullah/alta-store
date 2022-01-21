@@ -34,7 +34,10 @@ func (pr *ProductRepository) Create(product entities.Product) (entities.Product,
 
 func (pr *ProductRepository) Delete(productId int) (entities.Product, error) {
 	product := entities.Product{}
-	pr.db.Find(&product, "id = ?", productId)
+	err := pr.db.First(&product, "id = ?", productId).Error
+	if err != nil {
+		return product, err
+	}
 	pr.db.Delete(&product)
 	return product, nil
 }
@@ -42,7 +45,10 @@ func (pr *ProductRepository) Delete(productId int) (entities.Product, error) {
 func (pr *ProductRepository) Update(newProduct entities.Product, productId int) (entities.Product, error) {
 	product := entities.Product{}
 
-	pr.db.Find(&product, "id=?", productId)
+	err := pr.db.First(&product, "id = ?", productId).Error
+	if err != nil {
+		return product, err
+	}
 	pr.db.Model(&product).Updates(newProduct)
 
 	return product, nil
