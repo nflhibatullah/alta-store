@@ -2,7 +2,9 @@ package main
 
 import (
 	"altastore/configs"
+	"altastore/delivery/common"
 	"altastore/delivery/controllers/category"
+	"github.com/go-playground/validator/v10"
 
 	pc "altastore/delivery/controllers/product"
 	tc "altastore/delivery/controllers/transaction"
@@ -35,7 +37,7 @@ func main() {
 	categoryController := category.NewCategoryControllers(categoryRepo)
 
 	e := echo.New()
-
+	e.Validator = &common.CustomValidator{Validator: validator.New()}
 	routes.RegisterTransactionPath(e, transactionController)
 	routes.RegisterUserPath(e, userCtrl)
 	routes.RegisterProductPath(e, productController)

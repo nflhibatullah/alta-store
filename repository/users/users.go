@@ -2,6 +2,8 @@ package users
 
 import (
 	"altastore/entities"
+	"fmt"
+	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"
 )
 
@@ -16,13 +18,15 @@ func NewUsersRepo(db *gorm.DB) *UserRepository {
 func (ur *UserRepository) GetAll() ([]entities.User, error) {
 
 	users := []entities.User{}
-	ur.db.Find(&users)
+	ur.db.Find(&users, "role=?", "user")
 	return users, nil
 }
 
 func (ur *UserRepository) Get(userId int) (entities.User, error) {
 	user := entities.User{}
-	ur.db.Find(&user, userId)
+	err := ur.db.Find(&user, userId).Error
+	log.Error(err)
+	fmt.Println(err)
 	return user, nil
 }
 
@@ -35,8 +39,12 @@ func (ur *UserRepository) Create(newUser entities.User) (entities.User, error) {
 }
 func (ur *UserRepository) Update(updateUser entities.User, userId int) (entities.User, error) {
 	User := entities.User{}
-	ur.db.Find(&User, "id=?", userId)
+	err := ur.db.First(&User, "id=?", userId).Error
 	ur.db.Model(&User).Updates(updateUser)
+
+	if err != nil {
+		return User, err
+	}
 
 	return updateUser, nil
 }
@@ -50,7 +58,8 @@ func (ur *UserRepository) Delete(userId int) error {
 
 func (ur *UserRepository) Login(email string) (entities.User, error) {
 	var user entities.User
-	err := ur.db.First(&user, "email = ?", email).Error
+	var err = ur.db.First(&user, "email = ?", email).Error
+
 	if err != nil {
 		return user, err
 	}

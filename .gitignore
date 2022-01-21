@@ -1,3 +1,4 @@
 ./configs/ .
 ./delivery/routes/ .
 main.go
+.env
