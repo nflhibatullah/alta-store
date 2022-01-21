@@ -15,7 +15,7 @@ func NewProductRepo(db *gorm.DB) *ProductRepository {
 
 func (pr *ProductRepository) GetAll() ([]entities.Product, error) {
 	products := []entities.Product{}
-	pr.db.Preload("Category").Find(&products)
+	pr.db.Find(&products)
 
 	return products, nil
 }
