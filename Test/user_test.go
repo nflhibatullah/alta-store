@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -18,10 +19,11 @@ import (
 	//"fmt"
 	"github.com/labstack/echo/v4"
 	//"github.com/labstack/echo/v4/middleware"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRegisterUser(t *testing.T) {
@@ -252,7 +254,7 @@ func TestGetUser(t *testing.T) {
 				"/users/", userContoller.GetUserCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)),
 				middlewares.CheckRole,
 			)
-			wrongToken, _ := middlewares.CreateToken(4, "admin")
+			wrongToken, _ := middlewares.CreateToken(4, "admin", "fufu@gmail.com")
 
 			req := httptest.NewRequest(echo.GET, "/users/", nil)
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", wrongToken))
@@ -320,7 +322,7 @@ func TestGetAllUser(t *testing.T) {
 				"/users/", userContoller.GetAllUsersCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)),
 				middlewares.CheckRole,
 			)
-			wrongToken, _ := middlewares.CreateToken(4, "admin")
+			wrongToken, _ := middlewares.CreateToken(4, "admin", "")
 
 			req := httptest.NewRequest(echo.GET, "/users/", nil)
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", wrongToken))
@@ -405,7 +407,7 @@ func TestUpdateUser(t *testing.T) {
 				},
 			)
 
-			wrongToken, _ := middlewares.CreateToken(5, "user")
+			wrongToken, _ := middlewares.CreateToken(5, "user", "fufu@gmail.com")
 
 			req := httptest.NewRequest(echo.PUT, "/users/update", bytes.NewBuffer(dataBody))
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", wrongToken))
@@ -531,7 +533,7 @@ func TestDeleteUser(t *testing.T) {
 		"Delete User Failed Not Found", func(t *testing.T) {
 			e.DELETE("/users/delete", userContoller.DeleteUserCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)))
 
-			wrongToken, _ := middlewares.CreateToken(17, "user")
+			wrongToken, _ := middlewares.CreateToken(17, "user", "fufu@gmail.com")
 
 			req := httptest.NewRequest(echo.DELETE, "/users/delete", nil)
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", wrongToken))
