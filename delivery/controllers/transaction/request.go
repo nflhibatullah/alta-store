@@ -1,7 +1,7 @@
 package transaction
 
 type PostCustumerRequest struct {
-	Products []Item `json:"products"`
+	Products []Item `json:"products" validate:"required"`
 }
 
 type Item struct {

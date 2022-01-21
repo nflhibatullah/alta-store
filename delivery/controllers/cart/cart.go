@@ -101,6 +101,10 @@ func (cc CartController) Update(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
 	}
 
+	if err := c.Validate(&cartRequest); err != nil {
+      return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+    }
+
 	data := entities.Cart{
 		UserID:    uint(user.ID),
 		ProductID: uint(productId),

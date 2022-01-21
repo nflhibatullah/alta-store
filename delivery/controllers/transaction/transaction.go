@@ -32,6 +32,10 @@ func (tc TransactionController) Create(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 	}
 
+	if err := c.Validate(&transactionRequest); err != nil {
+      return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
+    }
+
 	user, _ := middlewares.ExtractTokenUser(c)
 	invoiceId := strings.ToUpper(strings.ReplaceAll(uuid.New().String(), "-", ""))
 

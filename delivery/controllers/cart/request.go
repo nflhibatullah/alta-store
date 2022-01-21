@@ -1,4 +1,4 @@
 package cart
 type UpdateCartRequest struct {
-	Quantity int `json:"quantity"`
+	Quantity int `json:"quantity" validate:"required"`
 }
