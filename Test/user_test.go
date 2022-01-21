@@ -386,7 +386,7 @@ func TestUpdateUser(t *testing.T) {
 			var response common.ResponseSuccess
 
 			json.Unmarshal(rec.Body.Bytes(), &response)
-
+			fmt.Println(response)
 			assert.Equal(t, http.StatusOK, response.Code)
 			assert.Equal(t, "Successful Operation", response.Message)
 			assert.Equal(t, "Naufal Aammar Hibatullah", response.Data.(map[string]interface{})["Name"])

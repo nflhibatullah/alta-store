@@ -23,6 +23,7 @@ type AppConfig struct {
 
 var lock = &sync.Mutex{}
 var appConfig *AppConfig
+var Mode string
 
 func GetConfig() *AppConfig {
 	lock.Lock()
@@ -54,6 +55,8 @@ func initConfig() *AppConfig {
 
 	constant.JWT_SECRET_KEY = os.Getenv("JWT_SECRET_KEY")
 	constant.XENDIT_CALLBACK_TOKEN = os.Getenv("XENDIT_CALLBACK_TOKEN")
+
+	Mode = os.Getenv("MODE")
 
 	return &defaultConfig
 }

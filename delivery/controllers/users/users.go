@@ -89,7 +89,7 @@ func (uscon UsersController) GetAllUsersCtrl() echo.HandlerFunc {
 // GET /users/:id
 func (uscon UsersController) GetUserCtrl() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userToken, err := middlewares.ExtractTokenUser(c) 
+		userToken, err := middlewares.ExtractTokenUser(c)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
 		}
@@ -97,9 +97,9 @@ func (uscon UsersController) GetUserCtrl() echo.HandlerFunc {
 		user, err := uscon.Repo.Get(userToken.ID)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "User tidak ditemukan"))
-			
+
 		}
-		
+
 		return c.JSON(http.StatusOK, common.SuccessResponse(user))
 
 	}
@@ -123,12 +123,13 @@ func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 			Email:    updateUserReq.Email,
 			Password: string(hash),
 		}
+		userData, err := uscon.Repo.Update(updateUser, user.ID)
 
-		if _, err := uscon.Repo.Update(updateUser, user.ID); err != nil {
+		if err != nil {
 			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "User not found"))
 		}
-		
-	return c.JSON(http.StatusOK, common.SuccessResponse(user))
+
+		return c.JSON(http.StatusOK, common.SuccessResponse(userData))
 	}
 }
 

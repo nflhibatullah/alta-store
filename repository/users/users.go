@@ -23,7 +23,10 @@ func (ur *UserRepository) GetAll() ([]entities.User, error) {
 
 func (ur *UserRepository) Get(userId int) (entities.User, error) {
 	user := entities.User{}
-	ur.db.Find(&user, userId)
+	err := ur.db.First(&user, userId).Error
+	if err != nil {
+		return user, err
+	}
 	return user, nil
 }
 

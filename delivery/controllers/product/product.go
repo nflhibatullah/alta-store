@@ -4,7 +4,6 @@ import (
 	"altastore/delivery/common"
 	"altastore/entities"
 	"altastore/repository/product"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -37,31 +36,34 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 			CategoryID:  newProductReq.CategoryID,
 		}
 
-		_, err := procon.Repo.Create(newProduct)
+		product, err := procon.Repo.Create(newProduct)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
 		}
 
-		return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
+		return c.JSON(http.StatusOK, common.SuccessResponse(product))
 	}
 
 }
 func (procon ProductController) GetAllProductCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
+		page, _ := strconv.Atoi(c.QueryParam("page"))
+		perpage, _ := strconv.Atoi(c.QueryParam("perpage"))
+		if page == 0 {
+			page = 1
+		}
+		if perpage == 0 {
+			perpage = 10
+		}
+		offset := (page - 1) * perpage
+		product, _ := procon.Repo.GetAll(offset, perpage)
 
-		product, err := procon.Repo.GetAll()
-
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
+		if len(product) == 0 {
+			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 		}
 
-		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "success",
-				"data":    product,
-			},
-		)
+		return c.JSON(http.StatusOK, common.PaginationResponse(page, perpage, product))
 	}
 
 }
@@ -98,14 +100,10 @@ func (procon ProductController) DeleteProductCtrl() echo.HandlerFunc {
 
 		_, err = procon.Repo.Delete(id)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
+			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "Produk tidak ditemukan"))
 		}
 
-		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "success",
-			},
-		)
+		return c.JSON(http.StatusOK, common.SuccessResponse("Berhasil menghapus produk"))
 	}
 
 }
@@ -115,8 +113,9 @@ func (procon ProductController) PutProductCtrl() echo.HandlerFunc {
 		PutProductReq := PutProductRequestFormat{}
 		id, _ := strconv.Atoi(c.Param("id"))
 		err := c.Bind(&PutProductReq)
-
-		fmt.Println(PutProductReq.CategoryID)
+		if err != nil {
+			return err
+		}
 
 		newProduct := entities.Product{
 			Name:        PutProductReq.Name,
@@ -125,16 +124,13 @@ func (procon ProductController) PutProductCtrl() echo.HandlerFunc {
 			Description: PutProductReq.Description,
 			CategoryID:  PutProductReq.CategoryID,
 		}
-		if id < 1 || err != nil {
-			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
+
+		result, err := procon.Repo.Update(newProduct, id)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "Ada kesalahan dalam update"))
 		}
 
-		result, _ := procon.Repo.Update(newProduct, id)
-		if result.ID == 0 {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
-		}
-
-		return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
+		return c.JSON(http.StatusOK, common.SuccessResponse(result))
 	}
 
 }
