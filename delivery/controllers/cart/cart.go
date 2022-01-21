@@ -4,6 +4,7 @@ import (
 	"altastore/delivery/common"
 	"altastore/delivery/middlewares"
 	"altastore/entities"
+	"altastore/helper"
 	repository "altastore/repository/cart"
 	"net/http"
 	"strconv"
@@ -20,26 +21,36 @@ func NewCartController(cart repository.Cart) *CartController {
 }
 
 func (cc CartController) Create(c echo.Context) error {
-	var cartRequest PostCartRequest
-
-	if err := c.Bind(&cartRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, common.ErrorResponse(http.StatusBadRequest, err.Error()))
-	}
+	const DEFAULT_ADD = 1
 
 	user, err := middlewares.ExtractTokenUser(c)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, common.ErrorResponse(http.StatusUnauthorized, err.Error()))
+		return c.JSON(http.StatusUnauthorized, common.NewBadRequestResponse())
 	}
 
+	productId, err := strconv.Atoi(c.Param("productId"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
+	}
+	
 	cartData := entities.Cart{
 		UserID:    uint(user.ID),
-		ProductID: cartRequest.ProductID,
-		Quantity:  cartRequest.Quantity,
+		ProductID: uint(productId),
+		Quantity:  DEFAULT_ADD,
 	}
 
-	_, err = cc.CartRepository.Create(cartData)
+	data, err := cc.CartRepository.CheckCart(cartData)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, common.ErrorResponse(http.StatusInternalServerError, err.Error()))
+		_, err = cc.CartRepository.Create(cartData)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, common.ErrorResponse(http.StatusInternalServerError, err.Error()))
+		}
+	} else {
+		cartData.Quantity += data.Quantity
+		_, err = cc.CartRepository.Update(cartData)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, common.ErrorResponse(http.StatusInternalServerError, err.Error()))
+		}
 	}
 
 	return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
@@ -53,10 +64,24 @@ func (cc CartController) GetAll(c echo.Context) error {
 
 	carts, err := cc.CartRepository.GetAll(user.ID)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, common.ErrorResponse(http.StatusUnauthorized, err.Error()))
+		return c.JSON(http.StatusUnauthorized, common.NewBadRequestResponse())
 	}
 
-	return c.JSON(http.StatusOK, common.SuccessResponse(carts))
+	data := []CartResponse{}
+
+	for _, dt := range carts {
+		data = append(data, CartResponse{
+			ProductID:   int(dt.ProductID),
+			ProductName: dt.Product.Name,
+			Quantity:    helper.CheckAvailableQuantity(dt.Quantity, dt.Product.Stock),
+			Price:       float64(dt.Product.Price),
+			TotalPrice:  float64(dt.Product.Price) * float64(dt.Quantity),
+			Category:    dt.Product.Category.Name,
+			Status: helper.CheckProductStatus(dt.Product.Stock),
+		})
+	}
+
+	return c.JSON(http.StatusOK, common.SuccessResponse(data))
 }
 
 func (cc CartController) Update(c echo.Context) error {
@@ -84,7 +109,7 @@ func (cc CartController) Update(c echo.Context) error {
 
 	_, err = cc.CartRepository.Update(data)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, common.ErrorResponse(http.StatusUnauthorized, err.Error()))
+		return c.JSON(http.StatusNotFound, common.ErrorResponse(http.StatusNotFound, err.Error()))
 	}
 
 	return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())

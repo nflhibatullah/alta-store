@@ -14,7 +14,7 @@ type Transaction struct {
 	BankID string
 	PaymentUrl string
 	PaidAt time.Time `gorm:"default:null"`
-	TotalPrice float64 `gorm:"not null"`
+	TotalPrice float64
 	Status string `gorm:"not null;default:PENDING"`
 	TransactionDetails []TransactionDetail
 }

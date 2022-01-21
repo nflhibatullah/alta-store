@@ -2,6 +2,7 @@ package product
 
 import (
 	"altastore/entities"
+
 	"gorm.io/gorm"
 )
 
@@ -22,7 +23,7 @@ func (pr *ProductRepository) GetAll() ([]entities.Product, error) {
 
 func (pr *ProductRepository) Get(productId int) ([]entities.Product, error) {
 	product := []entities.Product{}
-	pr.db.Where("id = ?", productId).Find(&product)
+	pr.db.Preload("Category").Where("id = ?", productId).Find(&product)
 
 	return product, nil
 }

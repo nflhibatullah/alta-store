@@ -24,6 +24,10 @@ type Transaction interface {
 	Update(transactionId int, transaction entities.Transaction) (entities.Transaction, error)
 
 	StoreItemProduct(transactionId int, item entities.TransactionDetail) (entities.TransactionDetail, error)
+
+	GetProductInCart(userId int, productId int) (bool)
+	UpdateStockProduct(productId int, stock int) (bool)
+	DeleteProductInCart(userId int, productId int) (bool)
 }
 
 func (tr *TransactionRepository) GetAll() ([]entities.Transaction, error) {
@@ -63,7 +67,7 @@ func (tr *TransactionRepository) GetByTransaction(userId int, transactionId int)
 func (tr *TransactionRepository) GetByInvoiceId(invoiceId string) (entities.Transaction, error) {
 	var transaction entities.Transaction
 
-	err := tr.db.Where("invoice_id = ?", invoiceId).First(&transaction).Error
+	err := tr.db.Preload("TransactionDetails.Product.Category").Where("invoice_id = ?", invoiceId).First(&transaction).Error
 
 	if err != nil {
 		return transaction, err
@@ -98,4 +102,34 @@ func (tr *TransactionRepository) StoreItemProduct(transactionId int, item entiti
 	}
 
 	return item, nil
+}
+
+func (tr *TransactionRepository) UpdateStockProduct(productId int, stock int) (bool) {
+	var p entities.Product
+
+	if err := tr.db.Model(&p).First(&p, productId).Update("Stock", stock).Error; err != nil {
+		return false
+	}
+
+	return true
+}
+
+func (tr *TransactionRepository) GetProductInCart(userId int, productId int) (bool) {
+	var cart entities.Cart
+
+	if err := tr.db.Where("user_id = ? AND product_id = ?", userId, productId).First(&cart).Error; err != nil {
+		return false
+	}
+
+	return true
+}
+
+func (tr *TransactionRepository) DeleteProductInCart(userId int, productId int) (bool) {
+	var cart entities.Cart
+
+	if err := tr.db.Where("user_id = ? AND product_id = ?", userId, productId).Delete(&cart).Error; err != nil {
+		return false
+	}
+
+	return true
 }

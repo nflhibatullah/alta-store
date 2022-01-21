@@ -9,9 +9,9 @@ type User struct {
 	gorm.Model
 	//USERID AUTO GENERATE
 	ID       uint
-	Email    string `gorm:"uniqueIndex" `
+	Email    string `gorm:"unique" `
 	Role     string `gorm:"default:user"`
-	Name     string `valid:"required"`
-	Password string `valid:"required"`
+	Name     string 
+	Password string 
 	Transaction []Transaction
 }

@@ -10,13 +10,11 @@
       "url": "http://localhost:8000"
     }
   ],
-  "paths":  {
+  "paths": {
     "/register": {
       "post": {
         "summary": "Create New User",
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -39,9 +37,7 @@
     "/login": {
       "post": {
         "summary": "Login User",
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -83,9 +79,7 @@
         ],
         "summary": "Get All Users",
         "description": "This endpoint only access by Admin",
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "responses": {
           "200": {
             "$ref": "#/components/responses/Response200"
@@ -107,9 +101,7 @@
           }
         ],
         "summary": "Get User By ID",
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "parameters": [
           {
             "name": "userId",
@@ -136,9 +128,7 @@
           }
         ],
         "summary": "Update User By ID",
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "parameters": [
           {
             "name": "userId",
@@ -184,9 +174,7 @@
           }
         ],
         "summary": "Delete User ID",
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "parameters": [
           {
             "name": "userId",
@@ -215,9 +203,7 @@
           }
         ],
         "summary": "Create Product",
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -256,9 +242,7 @@
       },
       "get": {
         "summary": "Get all product",
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "responses": {
           "200": {
             "$ref": "#/components/responses/Response200"
@@ -271,11 +255,8 @@
     },
     "/product/{productId}": {
       "get": {
-
         "summary": "Get a product by ID",
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "parameters": [
           {
             "name": "productId",
@@ -302,9 +283,7 @@
           }
         ],
         "summary": "Update product by ID",
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "parameters": [
           {
             "name": "productId",
@@ -358,9 +337,7 @@
           }
         ],
         "summary": "Delete Product by ID",
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "parameters": [
           {
             "name": "productId",
@@ -389,16 +366,13 @@
           }
         ],
         "summary": "Create Cart",
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-
                   "userId": {
                     "type": "integer",
                     "example": 1
@@ -423,9 +397,7 @@
       },
       "get": {
         "summary": "Get all Cart",
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "responses": {
           "200": {
             "$ref": "#/components/responses/Response200"
@@ -435,7 +407,6 @@
           }
         }
       }
-
     },
     "/cart/{productid}": {
       "put": {
@@ -445,9 +416,7 @@
           }
         ],
         "summary": "Update cart by productId",
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "parameters": [
           {
             "name": "productId",
@@ -472,7 +441,6 @@
                     "type": "integer",
                     "example": 15
                   }
-
                 }
               }
             }
@@ -494,9 +462,7 @@
           }
         ],
         "summary": "Delete cart by productID",
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "parameters": [
           {
             "name": "productId",
@@ -519,17 +485,20 @@
     },
     "/transaction": {
       "post": {
-        "tags": ["Transaction"]
+        "tags": ["Transaction"],
+        "responses": {}
       },
       "get": {
-        "tags": ["Transaction"]
-      },
-    },
-    "/transaction/callback": {
-      "post":{
-        "tags": ["Transaction"]
+        "tags": ["Transaction"],
+        "responses": {}
       }
     },
+    "/transaction/callback": {
+      "post": {
+        "tags": ["Transaction"],
+        "responses": {}
+      }
+    }
   },
   "components": {
     "securitySchemes": {

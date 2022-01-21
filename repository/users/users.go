@@ -23,7 +23,7 @@ func (ur *UserRepository) GetAll() ([]entities.User, error) {
 
 func (ur *UserRepository) Get(userId int) (entities.User, error) {
 	user := entities.User{}
-	ur.db.Preload("Carts").Find(&user, userId)
+	ur.db.Find(&user, userId)
 	return user, nil
 }
 

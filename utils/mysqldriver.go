@@ -22,10 +22,10 @@ func InitDB(config *configs.AppConfig) *gorm.DB {
 }
 
 func InitialMigrate(db *gorm.DB)  {
-	db.AutoMigrate(&entities.Cart{})
 	db.AutoMigrate(&entities.User{})
-	db.AutoMigrate(&entities.Product{})
 	db.AutoMigrate(&entities.Category{})
+	db.AutoMigrate(&entities.Product{})
+	db.AutoMigrate(&entities.Cart{})
 	db.AutoMigrate(&entities.Transaction{})
 	db.AutoMigrate(&entities.TransactionDetail{})
 }

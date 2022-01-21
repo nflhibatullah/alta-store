@@ -3,12 +3,10 @@ package helper
 import (
 	"altastore/entities"
 	"os"
-	"strings"
 
 	"github.com/xendit/xendit-go"
 	"github.com/xendit/xendit-go/invoice"
 )
-
 
 func CreateInvoice(transaction entities.Transaction, email string) (entities.Transaction, error) {
 	xendit.Opt.SecretKey = os.Getenv("XENDIT_SECRET_KEY")
@@ -23,12 +21,10 @@ func CreateInvoice(transaction entities.Transaction, email string) (entities.Tra
 		})
 	}
 
-	inv := strings.ToUpper(strings.ReplaceAll(transaction.InvoiceID, "-", ""))
-
 	data := invoice.CreateParams{
-		ExternalID:                     inv,
+		ExternalID:                     transaction.InvoiceID,
 		Amount:                         transaction.TotalPrice,
-		Description:                    "Invoice " + inv + " for " + email,
+		Description:                    "Invoice " + transaction.InvoiceID + " for " + email,
 		PayerEmail:                     email,
 		Items:                          items,
 	}
