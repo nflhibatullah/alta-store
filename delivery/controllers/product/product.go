@@ -36,31 +36,34 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 			CategoryID:  newProductReq.CategoryID,
 		}
 
-		_, err := procon.Repo.Create(newProduct)
+		product, err := procon.Repo.Create(newProduct)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
 		}
 
-		return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
+		return c.JSON(http.StatusOK, common.SuccessResponse(product))
 	}
 
 }
 func (procon ProductController) GetAllProductCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
+		page, _ := strconv.Atoi(c.QueryParam("page"))
+		perpage, _ := strconv.Atoi(c.QueryParam("perpage"))
+		if page == 0 {
+			page = 1
+		}
+		if perpage == 0 {
+			perpage = 10
+		}
+		offset := (page - 1) * perpage
+		product, _ := procon.Repo.GetAll(offset, perpage)
 
-		product, err := procon.Repo.GetAll()
-
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
+		if len(product) == 0 {
+			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 		}
 
-		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "success",
-				"data":    product,
-			},
-		)
+		return c.JSON(http.StatusOK, common.PaginationResponse(page, perpage, product))
 	}
 
 }
