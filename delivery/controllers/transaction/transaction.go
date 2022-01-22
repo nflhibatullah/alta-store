@@ -205,10 +205,12 @@ func (tc TransactionController) GetAll(c echo.Context) error {
 
 		for _, p := range td.TransactionDetails {
 			products = append(products, ProductTransaction{
-				ProductID:   int(p.ProductID),
-				ProductName: p.Product.Name,
-				Quantity:    p.Quantity,
-				Category:    p.Product.Category.Name,
+				ProductID:         int(p.ProductID),
+				ProductName:       p.Product.Name,
+				ProductPrice:      float64(p.Product.Price),
+				TotalProductPrice: float64(p.Product.Price) * float64(p.Quantity),
+				Quantity:          p.Quantity,
+				Category:          p.Product.Category.Name,
 			})
 		}
 
@@ -249,10 +251,12 @@ func (tc TransactionController) GetByTransaction(c echo.Context) error {
 
 	for _, p := range transaction.TransactionDetails {
 		products = append(products, ProductTransaction{
-			ProductID:   int(p.ProductID),
-			ProductName: p.Product.Name,
-			Quantity:    p.Quantity,
-			Category:    p.Product.Category.Name,
+			ProductID:         int(p.ProductID),
+			ProductName:       p.Product.Name,
+			ProductPrice:      float64(p.Product.Price),
+			TotalProductPrice: float64(p.Product.Price) * float64(p.Quantity),
+			Quantity:          p.Quantity,
+			Category:          p.Product.Category.Name,
 		})
 	}
 
