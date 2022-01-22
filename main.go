@@ -2,7 +2,6 @@ package main
 
 import (
 	"altastore/configs"
-	"altastore/delivery/common"
 	ctc "altastore/delivery/controllers/cart"
 	cc "altastore/delivery/controllers/category"
 	"altastore/delivery/middlewares"
@@ -49,7 +48,9 @@ func main() {
 
 	e.Pre(middleware.RemoveTrailingSlash())
 
-	e.Validator = &common.CustomValidator{Validator: validator.New()}
+	e.Validator = &uc.UserValidator{Validator: validator.New()}
+	e.Validator = &pc.ProductValidator{Validator: validator.New()}
+	e.Validator = &cc.CategoryValidator{Validator: validator.New()}
 
 	routes.RegisterTransactionPath(e, transactionController)
 	routes.RegisterUserPath(e, userCtrl)

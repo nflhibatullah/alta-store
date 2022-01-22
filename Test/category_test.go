@@ -106,7 +106,7 @@ func TestCreateCategory(t *testing.T) {
 	t.Run(
 		"Create Category Succes", func(t *testing.T) {
 			e.POST("/categories", categoryContoller.PostCategoryCtrl())
-			e.Validator = &common.CustomValidator{Validator: validator.New()}
+			e.Validator = &catController.CategoryValidator{Validator: validator.New()}
 			registerBody, _ := json.Marshal(
 				map[string]interface{}{
 					"name": "Handphone",
@@ -128,7 +128,7 @@ func TestCreateCategory(t *testing.T) {
 
 			assert.Equal(t, http.StatusOK, response.Code)
 			assert.Equal(t, "Successful Operation", response.Message)
-			assert.Equal(t, "Handphone", response.Data.(map[string]interface{})["Name"])
+			assert.Equal(t, "Handphone", response.Data.(map[string]interface{})["name"])
 
 		},
 	)

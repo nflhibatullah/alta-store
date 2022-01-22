@@ -4,6 +4,7 @@ import (
 	"altastore/delivery/common"
 	"altastore/entities"
 	"altastore/repository/product"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -24,9 +25,7 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 		newProductReq := CreateProductRequestFormat{}
-		if err := c.Bind(&newProductReq); err != nil {
-			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
-		}
+		c.Bind(&newProductReq)
 
 		newProduct := entities.Product{
 			Name:        newProductReq.Name,
@@ -36,10 +35,7 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 			CategoryID:  newProductReq.CategoryID,
 		}
 
-		product, err := procon.Repo.Create(newProduct)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, common.NewInternalServerErrorResponse())
-		}
+		product, _ := procon.Repo.Create(newProduct)
 
 		return c.JSON(http.StatusOK, common.SuccessResponse(product))
 	}
@@ -50,44 +46,61 @@ func (procon ProductController) GetAllProductCtrl() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		perpage, _ := strconv.Atoi(c.QueryParam("perpage"))
+		search := c.QueryParam("search")
 		if page == 0 {
 			page = 1
 		}
 		if perpage == 0 {
 			perpage = 10
 		}
+
+		fmt.Println(search)
 		offset := (page - 1) * perpage
-		product, _ := procon.Repo.GetAll(offset, perpage)
+		product, _ := procon.Repo.GetAll(offset, perpage, search)
 
 		if len(product) == 0 {
 			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 		}
 
-		return c.JSON(http.StatusOK, common.PaginationResponse(page, perpage, product))
+		data := []ProductResponse{}
+		for _, item := range product {
+			data = append(
+				data, ProductResponse{
+					ID:          item.ID,
+					Name:        item.Name,
+					Price:       item.Price,
+					Stock:       item.Stock,
+					Description: item.Description,
+					Category:    item.Category.Name,
+				},
+			)
+		}
+
+		return c.JSON(http.StatusOK, common.PaginationResponse(page, perpage, data))
 	}
 
 }
 func (procon ProductController) GetProductCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
+		
 		id, _ := strconv.Atoi(c.Param("id"))
 
-		product, _ := procon.Repo.Get(id)
+		product, err := procon.Repo.Get(id)
 
-		if len(product) == 0 {
-			return c.JSON(
-				http.StatusNotFound, map[string]interface{}{
-					"message": "Product not found",
-				},
-			)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 		}
 
-		return c.JSON(
-			http.StatusOK, map[string]interface{}{
-				"message": "succes",
-				"data":    product,
-			},
-		)
+		data := ProductResponse{
+			ID:          product.ID,
+			Name:        product.Name,
+			Price:       product.Price,
+			Stock:       product.Stock,
+			Description: product.Description,
+			Category:    product.Category.Name,
+		}
+		return c.JSON(http.StatusOK, common.SuccessResponse(data))
 
 	}
 

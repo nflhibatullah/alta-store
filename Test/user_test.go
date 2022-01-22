@@ -41,7 +41,7 @@ func TestRegisterUser(t *testing.T) {
 	t.Run(
 		"Register Success 1", func(t *testing.T) {
 			e.POST("/register", userContoller.PostUserCtrl())
-			e.Validator = &common.CustomValidator{Validator: validator.New()}
+			e.Validator = &userController.UserValidator{Validator: validator.New()}
 			registerBody, _ := json.Marshal(
 				map[string]interface{}{
 					"name":     "Arif",
@@ -65,9 +65,8 @@ func TestRegisterUser(t *testing.T) {
 
 			assert.Equal(t, http.StatusOK, response.Code)
 			assert.Equal(t, "Successful Operation", response.Message)
-			assert.Equal(t, "Arif", response.Data.(map[string]interface{})["Name"])
-			assert.Equal(t, "arif@gmail.com", response.Data.(map[string]interface{})["Email"])
-			assert.NotNil(t, response.Data.(map[string]interface{})["Password"])
+			assert.Equal(t, "Arif", response.Data.(map[string]interface{})["name"])
+			assert.Equal(t, "arif@gmail.com", response.Data.(map[string]interface{})["email"])
 
 		},
 	)
@@ -367,7 +366,7 @@ func TestUpdateUser(t *testing.T) {
 	t.Run(
 		"Update User Success", func(t *testing.T) {
 			e.PUT("/users/update", userContoller.EditUserCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)))
-
+			e.Validator = &userController.UserValidator{Validator: validator.New()}
 			dataBody, _ := json.Marshal(
 				map[string]interface{}{
 					"name":     "Naufal Aammar Hibatullah",

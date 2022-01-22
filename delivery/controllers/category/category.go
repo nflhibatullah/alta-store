@@ -4,6 +4,7 @@ import (
 	"altastore/delivery/common"
 	"altastore/entities"
 	"altastore/repository/category"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -37,7 +38,11 @@ func (catcon CategoryController) PostCategoryCtrl() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "Kategori yang diinput sudah ada"))
 		}
 
-		return c.JSON(http.StatusOK, common.SuccessResponse(category))
+		data := CategoryResponse{
+			ID:   category.ID,
+			Name: category.Name,
+		}
+		return c.JSON(http.StatusOK, common.SuccessResponse(data))
 	}
 
 }
@@ -48,11 +53,21 @@ func (catcon CategoryController) GetAllCategoryCtrl() echo.HandlerFunc {
 		category, _ := catcon.Repo.GetAll()
 
 		if len(category) == 0 {
-			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "Kategori tidak ditemukan"))
+			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
+		}
+
+		data := []CategoryResponse{}
+		for _, item := range category {
+			data = append(
+				data, CategoryResponse{
+					ID:   item.ID,
+					Name: item.Name,
+				},
+			)
 		}
 
 		return c.JSON(
-			http.StatusOK, common.SuccessResponse(category),
+			http.StatusOK, common.SuccessResponse(data),
 		)
 	}
 
@@ -62,13 +77,18 @@ func (catcon CategoryController) GetCategoryCtrl() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		id, _ := strconv.Atoi(c.Param("id"))
 
-		category, _ := catcon.Repo.Get(id)
-
-		if len(category) == 0 {
-			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "category tidak ditemukan"))
+		category, err := catcon.Repo.Get(id)
+		fmt.Println(err)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 		}
 
-		return c.JSON(http.StatusOK, common.SuccessResponse(category))
+		data := CategoryResponse{
+			ID:   category.ID,
+			Name: category.Name,
+		}
+
+		return c.JSON(http.StatusOK, common.SuccessResponse(data))
 
 	}
 

@@ -14,17 +14,20 @@ func NewProductRepo(db *gorm.DB) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-func (pr *ProductRepository) GetAll(offset, pageSize int) ([]entities.Product, error) {
+func (pr *ProductRepository) GetAll(offset, pageSize int, search string) ([]entities.Product, error) {
 	products := []entities.Product{}
 
-	pr.db.Preload("Category").Offset(offset).Limit(pageSize).Find(&products)
+	pr.db.Preload("Category").Offset(offset).Limit(pageSize).Where("name LIKE ?", "%"+search+"%").Find(&products)
 
 	return products, nil
 }
 
-func (pr *ProductRepository) Get(productId int) ([]entities.Product, error) {
-	product := []entities.Product{}
-	pr.db.Preload("Category").Where("id = ?", productId).Find(&product)
+func (pr *ProductRepository) Get(productId int) (entities.Product, error) {
+	product := entities.Product{}
+	err := pr.db.Preload("Category").Where("id = ?", productId).First(&product).Error
+	if err != nil {
+		return product, err
+	}
 
 	return product, nil
 }

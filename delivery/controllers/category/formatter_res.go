@@ -23,3 +23,8 @@ type PutCategoryResponseFormat struct {
 	Message string              `json:"message"`
 	Data    []entities.Category `json:"data"`
 }
+
+type CategoryResponse struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}

@@ -63,12 +63,18 @@ func (uscon UsersController) PostUserCtrl() echo.HandlerFunc {
 			Password: string(hash),
 		}
 
-		_, err := uscon.Repo.Create(newUser)
+		res, err := uscon.Repo.Create(newUser)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "email telah terdaftar"))
 		}
 
-		return c.JSON(http.StatusOK, common.NewSuccessOperationResponse())
+		data := UserResponse{
+			ID:    res.ID,
+			Name:  res.Name,
+			Email: res.Email,
+		}
+		return c.JSON(http.StatusOK, common.SuccessResponse(data))
+
 	}
 
 }
@@ -82,25 +88,37 @@ func (uscon UsersController) GetAllUsersCtrl() echo.HandlerFunc {
 			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "User tidak ditemukan"))
 		}
 
-		return c.JSON(http.StatusOK, common.SuccessResponse(user))
+		data := []UserResponse{}
+
+		for _, item := range user {
+			data = append(
+				data, UserResponse{
+					ID:    item.ID,
+					Name:  item.Name,
+					Email: item.Email,
+				},
+			)
+		}
+		return c.JSON(http.StatusOK, common.SuccessResponse(data))
 	}
 }
 
 // GET /users/:id
 func (uscon UsersController) GetUserCtrl() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userToken, err := middlewares.ExtractTokenUser(c)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
-		}
+		userToken, _ := middlewares.ExtractTokenUser(c)
 
 		user, err := uscon.Repo.Get(userToken.ID)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "User tidak ditemukan"))
 
 		}
-
-		return c.JSON(http.StatusOK, common.SuccessResponse(user))
+		data := UserResponse{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+		}
+		return c.JSON(http.StatusOK, common.SuccessResponse(data))
 
 	}
 }

@@ -20,9 +20,12 @@ func (cr *CategoryRepository) GetAll() ([]entities.Category, error) {
 	return categorys, nil
 }
 
-func (cr *CategoryRepository) Get(categoryId int) ([]entities.Category, error) {
-	category := []entities.Category{}
-	cr.db.Where("id = ?", categoryId).Find(&category)
+func (cr *CategoryRepository) Get(categoryId int) (entities.Category, error) {
+	category := entities.Category{}
+	err := cr.db.Where("id = ?", categoryId).First(&category).Error
+	if err != nil {
+		return category, err
+	}
 	return category, nil
 }
 

@@ -30,3 +30,9 @@ type PutUserResponseFormat struct {
 type DeleteUserResponseFormat struct {
 	Message string `json:"message"`
 }
+
+type UserResponse struct {
+	ID    uint   `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
