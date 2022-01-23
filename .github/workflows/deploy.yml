@@ -16,4 +16,4 @@ jobs:
           script: |
             cd altastore
             git pull
-            docker-compose down && docker-compose up --build -d
+            sudo docker-compose down && docker-compose up --build -d
