@@ -5,6 +5,7 @@ import (
 	"altastore/constant"
 	"altastore/delivery/common"
 
+	"altastore/delivery/controllers/product"
 	proController "altastore/delivery/controllers/product"
 	"altastore/delivery/middlewares"
 	proRepo "altastore/repository/product"
@@ -277,7 +278,7 @@ func TestUpdateProduct(t *testing.T) {
 				"/products/:id", proController.PutProductCtrl(),
 				middleware.JWT([]byte(constant.JWT_SECRET_KEY)),
 			)
-			e.Validator = &common.CustomValidator{Validator: validator.New()}
+			e.Validator = &product.ProductValidator{Validator: validator.New()}
 
 			dataBody, _ := json.Marshal(
 				map[string]interface{}{

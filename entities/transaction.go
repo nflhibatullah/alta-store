@@ -16,5 +16,5 @@ type Transaction struct {
 	PaidAt time.Time `gorm:"default:null"`
 	TotalPrice float64
 	Status string `gorm:"not null;default:PENDING"`
-	TransactionDetails []TransactionDetail
+	TransactionDetails []TransactionDetail `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

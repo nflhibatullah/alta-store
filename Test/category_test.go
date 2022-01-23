@@ -33,6 +33,7 @@ import (
 
 var token string
 var tokenUser string
+var tokenAdmin string
 
 func TestMain(m *testing.M) {
 	config := configs.GetConfig()
@@ -93,6 +94,7 @@ func TestMain(m *testing.M) {
 	json.Unmarshal(recLogin.Body.Bytes(), &response)
 
 	token = response.Data.(string)
+	tokenAdmin = response.Data.(string)
 
 	// registeruser
 	e.POST("/register", userContoller.PostUserCtrl())

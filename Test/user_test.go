@@ -419,9 +419,8 @@ func TestUpdateUser(t *testing.T) {
 			fmt.Println(response)
 			assert.Equal(t, http.StatusOK, response.Code)
 			assert.Equal(t, "Successful Operation", response.Message)
-			assert.Equal(t, "Naufal Aammar Hibatullah", response.Data.(map[string]interface{})["Name"])
-			assert.Equal(t, "naufalaammar@gmail.com", response.Data.(map[string]interface{})["Email"])
-			assert.NotNil(t, response.Data.(map[string]interface{})["Password"])
+			assert.Equal(t, "Naufal Aammar Hibatullah", response.Data.(map[string]interface{})["name"])
+			assert.Equal(t, "naufalaammar@gmail.com", response.Data.(map[string]interface{})["email"])
 		},
 	)
 
