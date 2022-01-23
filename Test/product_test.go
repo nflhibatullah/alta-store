@@ -72,13 +72,15 @@ func TestCreateProduct(t *testing.T) {
 	t.Run(
 		"Create Product Failed (Bad Request)", func(t *testing.T) {
 			e.POST("/product", proContoller.PostProductCtrl())
-			e.Validator = &proController.ProductValidator{Validator: validator.New()}
+
+			e.Validator = &product.ProductValidator{Validator: validator.New()}
+
 			registerBody, _ := json.Marshal(
 				map[string]interface{}{
 					"name": "Handphone",
 				},
 			)
-
+			
 			req := httptest.NewRequest(echo.POST, "/product", bytes.NewBuffer(registerBody))
 			req.Header.Set("Content-Type", "application/json")
 			rec := httptest.NewRecorder()
