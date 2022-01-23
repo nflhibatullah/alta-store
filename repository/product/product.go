@@ -53,7 +53,7 @@ func (pr *ProductRepository) Delete(productId int) (entities.Product, error) {
 func (pr *ProductRepository) Update(newProduct entities.Product, productId int) (entities.Product, error) {
 	product := entities.Product{}
 
-	err := pr.db.First(&product, "id = ?", productId).Error
+	err := pr.db.Preload("Category").First(&product, "id = ?", productId).Error
 	if err != nil {
 		return product, err
 	}
