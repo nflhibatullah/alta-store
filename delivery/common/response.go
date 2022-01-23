@@ -37,7 +37,7 @@ func ErrorResponse(code int, message string) ResponseError {
 func PaginationResponse(page, perpage int, data interface{}) ResponsePagination {
 	return ResponsePagination{
 		Code:    200,
-		Message: "Succesful Operation",
+		Message: "Successful Operation",
 		Page:    page,
 		PerPage: perpage,
 		Data:    data,

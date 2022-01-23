@@ -33,7 +33,10 @@ func (pr *ProductRepository) Get(productId int) (entities.Product, error) {
 }
 
 func (pr *ProductRepository) Create(product entities.Product) (entities.Product, error) {
-	pr.db.Save(&product)
+	err := pr.db.Save(&product).Error
+	if err != nil {
+		return product, err
+	}
 	return product, nil
 }
 

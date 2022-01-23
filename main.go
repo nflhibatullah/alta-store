@@ -5,7 +5,6 @@ import (
 	ctc "altastore/delivery/controllers/cart"
 	cc "altastore/delivery/controllers/category"
 	"altastore/delivery/middlewares"
-
 	"github.com/go-playground/validator/v10"
 
 	pc "altastore/delivery/controllers/product"
