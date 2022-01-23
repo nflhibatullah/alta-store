@@ -25,7 +25,7 @@ func NewTransactionController(transaction repository.Transaction) *TransactionCo
 }
 
 func (tc TransactionController) Create(c echo.Context) error {
-	var transactionRequest PostCustumerRequest
+	var transactionRequest TransactionRequest
 
 	// bind request data
 	if err := c.Bind(&transactionRequest); err != nil {
@@ -242,6 +242,10 @@ func (tc TransactionController) GetByTransaction(c echo.Context) error {
 	}
 
 	transaction, err := tc.TransactionRepository.GetByTransaction(user.ID, transactionId)
+
+	if user.Role == "admin" {
+		transaction, err = tc.TransactionRepository.GetByTransactionAdmin(transactionId)
+	}
 
 	if err != nil {
 		return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())

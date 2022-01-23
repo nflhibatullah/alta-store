@@ -19,7 +19,9 @@ type Transaction interface {
 	GetAll() ([]entities.Transaction, error)
 	GetByUser(userId int) ([]entities.Transaction, error)
 	GetByTransaction(userId int, transactionId int) (entities.Transaction, error)
+	GetByTransactionAdmin(transactionId int) (entities.Transaction, error)
 	GetByInvoiceId(invoiceId string) (entities.Transaction, error)
+	DeleteByInvoiceId(invoiceId string) (entities.Transaction, error)
 	Create(transaction entities.Transaction) (entities.Transaction, error)
 	Update(transactionId int, transaction entities.Transaction) (entities.Transaction, error)
 
@@ -64,10 +66,34 @@ func (tr *TransactionRepository) GetByTransaction(userId int, transactionId int)
 	return transaction, nil
 }
 
+func (tr *TransactionRepository) GetByTransactionAdmin(transactionId int) (entities.Transaction, error) {
+	var transaction entities.Transaction
+
+	err := tr.db.Preload("TransactionDetails.Product.Category").Preload(clause.Associations).First(&transaction, transactionId).Error
+
+	if err != nil {
+		return transaction, err
+	}
+
+	return transaction, nil
+}
+
 func (tr *TransactionRepository) GetByInvoiceId(invoiceId string) (entities.Transaction, error) {
 	var transaction entities.Transaction
 
 	err := tr.db.Preload("TransactionDetails.Product.Category").Where("invoice_id = ?", invoiceId).First(&transaction).Error
+
+	if err != nil {
+		return transaction, err
+	}
+
+	return transaction, nil
+}
+
+func (tr *TransactionRepository) DeleteByInvoiceId(invoiceId string) (entities.Transaction, error) {
+	var transaction entities.Transaction
+
+	err := tr.db.Where("invoice_id = ?", invoiceId).Unscoped().Delete(&transaction).Error
 
 	if err != nil {
 		return transaction, err

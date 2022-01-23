@@ -5,6 +5,7 @@ import (
 	"altastore/constant"
 	"altastore/delivery/common"
 
+	"altastore/delivery/controllers/product"
 	proController "altastore/delivery/controllers/product"
 	"altastore/delivery/middlewares"
 	proRepo "altastore/repository/product"
@@ -12,14 +13,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestCreateProduct(t *testing.T) {
@@ -70,13 +72,15 @@ func TestCreateProduct(t *testing.T) {
 	t.Run(
 		"Create Product Failed (Bad Request)", func(t *testing.T) {
 			e.POST("/product", proContoller.PostProductCtrl())
-			e.Validator = &proController.ProductValidator{Validator: validator.New()}
+
+			e.Validator = &product.ProductValidator{Validator: validator.New()}
+
 			registerBody, _ := json.Marshal(
 				map[string]interface{}{
 					"name": "Handphone",
 				},
 			)
-
+			
 			req := httptest.NewRequest(echo.POST, "/product", bytes.NewBuffer(registerBody))
 			req.Header.Set("Content-Type", "application/json")
 			rec := httptest.NewRecorder()
@@ -276,7 +280,7 @@ func TestUpdateProduct(t *testing.T) {
 				"/products/:id", proController.PutProductCtrl(),
 				middleware.JWT([]byte(constant.JWT_SECRET_KEY)),
 			)
-			e.Validator = &common.CustomValidator{Validator: validator.New()}
+			e.Validator = &product.ProductValidator{Validator: validator.New()}
 
 			dataBody, _ := json.Marshal(
 				map[string]interface{}{
