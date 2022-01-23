@@ -57,28 +57,27 @@ func (cc CartController) Create(c echo.Context) error {
 }
 
 func (cc CartController) GetAll(c echo.Context) error {
-	user, err := middlewares.ExtractTokenUser(c)
-	if err != nil {
-		return c.JSON(http.StatusNotAcceptable, common.NewStatusNotAcceptable())
-	}
+	user, _ := middlewares.ExtractTokenUser(c)
 
 	carts, err := cc.CartRepository.GetAll(user.ID)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, common.NewBadRequestResponse())
+		return c.JSON(http.StatusNotFound, common.NewNotFoundResponse())
 	}
 
 	data := []CartResponse{}
 
 	for _, dt := range carts {
-		data = append(data, CartResponse{
-			ProductID:   int(dt.ProductID),
-			ProductName: dt.Product.Name,
-			Quantity:    helper.CheckAvailableQuantity(dt.Quantity, dt.Product.Stock),
-			Price:       float64(dt.Product.Price),
-			TotalPrice:  float64(dt.Product.Price) * float64(dt.Quantity),
-			Category:    dt.Product.Category.Name,
-			Status: helper.CheckProductStatus(dt.Product.Stock),
-		})
+		if dt.Product.ID != 0 {
+			data = append(data, CartResponse{
+				ProductID:   int(dt.ProductID),
+				ProductName: dt.Product.Name,
+				Quantity:    helper.CheckAvailableQuantity(dt.Quantity, dt.Product.Stock),
+				Price:       float64(dt.Product.Price),
+				TotalPrice:  float64(dt.Product.Price) * float64(dt.Quantity),
+				Category:    dt.Product.Category.Name,
+				Status: helper.CheckProductStatus(dt.Product.Stock),
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, common.SuccessResponse(data))

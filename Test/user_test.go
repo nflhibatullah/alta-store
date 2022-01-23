@@ -163,6 +163,36 @@ func TestLoginUser(t *testing.T) {
 
 		},
 	)
+	
+	t.Run(
+		"Login Success user", func(t *testing.T) {
+			e.POST("/login", userContoller.Login())
+
+			loginBody, _ := json.Marshal(
+				map[string]interface{}{
+					"email":    "arif@gmail.com",
+					"password": "123",
+				},
+			)
+
+			req := httptest.NewRequest(echo.POST, "/login", bytes.NewBuffer(loginBody))
+			req.Header.Set("Content-Type", "application/json")
+			rec := httptest.NewRecorder()
+
+			e.ServeHTTP(rec, req)
+
+			var response common.ResponseSuccess
+
+			json.Unmarshal(rec.Body.Bytes(), &response)
+
+			tokenUser = response.Data.(string)
+
+			assert.Equal(t, http.StatusOK, response.Code)
+			assert.Equal(t, "Successful Operation", response.Message)
+			assert.NotNil(t, response.Data)
+
+		},
+	)
 
 	t.Run(
 		"Login Failed (User Not Found)", func(t *testing.T) {
@@ -317,11 +347,12 @@ func TestGetAllUser(t *testing.T) {
 	t.Run(
 		"Get User Failed Not Found", func(t *testing.T) {
 			userRepo.Delete(2)
+			userRepo.Delete(3)
 			e.GET(
 				"/users/", userContoller.GetAllUsersCtrl(), middleware.JWT([]byte(constant.JWT_SECRET_KEY)),
 				middlewares.CheckRole,
 			)
-			wrongToken, _ := middlewares.CreateToken(4, "admin", "")
+			wrongToken, _ := middlewares.CreateToken(8, "admin", "")
 
 			req := httptest.NewRequest(echo.GET, "/users/", nil)
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", wrongToken))

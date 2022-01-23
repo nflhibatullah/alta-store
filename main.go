@@ -51,6 +51,8 @@ func main() {
 	e.Validator = &uc.UserValidator{Validator: validator.New()}
 	e.Validator = &pc.ProductValidator{Validator: validator.New()}
 	e.Validator = &cc.CategoryValidator{Validator: validator.New()}
+	e.Validator = &ctc.CartValidator{Validator: validator.New()}
+	e.Validator = &tc.TransactionValidator{Validator: validator.New()}
 
 	routes.RegisterTransactionPath(e, transactionController)
 	routes.RegisterUserPath(e, userCtrl)

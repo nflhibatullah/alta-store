@@ -3,12 +3,13 @@ package seed
 import (
 	"altastore/entities"
 	"fmt"
-	"gorm.io/gorm"
 	"math/rand"
+
+	"gorm.io/gorm"
 )
 
 func ProductSeed(db *gorm.DB) {
-	for i := 0; i < 100; i++ {
+	for i := 1; i <= 100; i++ {
 		product := entities.Product{
 			Name:        "Product " + fmt.Sprint(i),
 			Price:       50000,

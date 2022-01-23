@@ -4,15 +4,19 @@ import (
 	"altastore/configs"
 	"altastore/constant"
 	"altastore/delivery/common"
+	"altastore/delivery/controllers/category"
 	catController "altastore/delivery/controllers/category"
+	proController "altastore/delivery/controllers/product"
 	userController "altastore/delivery/controllers/users"
 	"altastore/delivery/middlewares"
 	"altastore/entities"
 	categoryRepo "altastore/repository/category"
+	proRepo "altastore/repository/product"
+	"net/http"
+
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/stretchr/testify/assert"
-	"net/http"
 
 	userRepo "altastore/repository/users"
 
@@ -20,13 +24,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
 )
 
 var token string
+var tokenUser string
 
 func TestMain(m *testing.M) {
 	config := configs.GetConfig()
@@ -35,13 +41,16 @@ func TestMain(m *testing.M) {
 	db.Migrator().DropTable(&entities.User{})
 	db.Migrator().DropTable(&entities.Product{})
 	db.Migrator().DropTable(&entities.Category{})
+	db.Migrator().DropTable(&entities.TransactionDetail{})
+	db.Migrator().DropTable(&entities.Transaction{})
+	db.Migrator().DropTable(&entities.Cart{})
 	utils.InitialMigrate(db)
 
 	userRepo := userRepo.NewUsersRepo(db)
 	userContoller := userController.NewUsersControllers(userRepo)
 
 	e := echo.New()
-	e.Validator = &common.CustomValidator{Validator: validator.New()}
+	e.Validator = &category.CategoryValidator{Validator: validator.New()}
 	e.POST("/register", userContoller.PostUserCtrl())
 
 	registerBody, _ := json.Marshal(
@@ -84,6 +93,84 @@ func TestMain(m *testing.M) {
 	json.Unmarshal(recLogin.Body.Bytes(), &response)
 
 	token = response.Data.(string)
+
+	// registeruser
+	e.POST("/register", userContoller.PostUserCtrl())
+
+	registerBodyUser, _ := json.Marshal(
+		map[string]interface{}{
+			"name":     "Furqon",
+			"email":    "furqon@gmail.com",
+			"password": "123",
+		},
+	)
+
+	reqRegisterUser := httptest.NewRequest(echo.POST, "/register", bytes.NewBuffer(registerBodyUser))
+	reqRegisterUser.Header.Set("Content-Type", "application/json")
+	recRegisterUser := httptest.NewRecorder()
+
+	e.ServeHTTP(recRegisterUser, reqRegisterUser)
+
+	// login user
+	e.POST("/login", userContoller.Login())
+
+	loginBodyUser, _ := json.Marshal(
+		map[string]interface{}{
+			"email":    "furqon@gmail.com",
+			"password": "123",
+		},
+	)
+
+	reqLoginUser := httptest.NewRequest(echo.POST, "/login", bytes.NewBuffer(loginBodyUser))
+	reqLoginUser.Header.Set("Content-Type", "application/json")
+	recLoginUser := httptest.NewRecorder()
+
+	e.ServeHTTP(recLoginUser, reqLoginUser)
+
+	var responseUser common.ResponseSuccess
+
+	json.Unmarshal(recLoginUser.Body.Bytes(), &responseUser)
+
+	tokenUser = responseUser.Data.(string)
+
+	// create category
+	categoryRepo := categoryRepo.NewCategoryRepo(db)
+	categoryContoller := catController.NewCategoryControllers(categoryRepo)
+
+	e.POST("/categories", categoryContoller.PostCategoryCtrl())
+	e.Validator = &catController.CategoryValidator{Validator: validator.New()}
+	registerBodyCategory, _ := json.Marshal(
+		map[string]interface{}{
+			"name": "Baju Pria",
+		},
+	)
+
+	reqCategory := httptest.NewRequest(echo.POST, "/categories", bytes.NewBuffer(registerBodyCategory))
+	reqCategory.Header.Set("Content-Type", "application/json")
+	recCategory := httptest.NewRecorder()
+
+	e.ServeHTTP(recCategory, reqCategory)
+
+	proRepo := proRepo.NewProductRepo(db)
+	proContoller := proController.NewProductControllers(proRepo)
+
+	e.POST("/product", proContoller.PostProductCtrl())
+	e.Validator = &proController.ProductValidator{Validator: validator.New()}
+	registerBodyProduct, _ := json.Marshal(
+		map[string]interface{}{
+			"name":        "Baju Koko Alif",
+			"price":       250000,
+			"stock":       10,
+			"description": "Baju koko nih",
+			"category_id": 1,
+		},
+	)
+
+	reqProduct := httptest.NewRequest(echo.POST, "/product", bytes.NewBuffer(registerBodyProduct))
+	reqProduct.Header.Set("Content-Type", "application/json")
+	recProduct := httptest.NewRecorder()
+
+	e.ServeHTTP(recProduct, reqProduct)
 
 	fmt.Println("TEST MAIN JALAN NIH")
 
@@ -296,6 +383,7 @@ func TestGetAllCategory(t *testing.T) {
 	t.Run(
 		"Get Category Failed Not Found", func(t *testing.T) {
 			categoryRepo.Delete(1)
+			categoryRepo.Delete(2)
 			e.GET(
 				"/categories/", categoryController.GetAllCategoryCtrl(),
 				middleware.JWT([]byte(constant.JWT_SECRET_KEY)),
@@ -349,7 +437,7 @@ func TestUpdateCategory(t *testing.T) {
 				"/categories/:id", categoryController.PutCategoryCtrl(),
 				middleware.JWT([]byte(constant.JWT_SECRET_KEY)),
 			)
-			e.Validator = &common.CustomValidator{Validator: validator.New()}
+			e.Validator = &category.CategoryValidator{Validator: validator.New()}
 
 			dataBody, _ := json.Marshal(
 				map[string]interface{}{
@@ -403,7 +491,7 @@ func TestUpdateCategory(t *testing.T) {
 				"/categories/:id", categoryController.PutCategoryCtrl(),
 				middleware.JWT([]byte(constant.JWT_SECRET_KEY)),
 			)
-			e.Validator = &common.CustomValidator{Validator: validator.New()}
+			e.Validator = &catController.CategoryValidator{Validator: validator.New()}
 			dataBody, _ := json.Marshal(
 				map[string]interface{}{
 					"name": 123,
@@ -434,7 +522,7 @@ func TestUpdateCategory(t *testing.T) {
 					"name": "Laptop",
 				},
 			)
-			e.Validator = &common.CustomValidator{Validator: validator.New()}
+			e.Validator = &catController.CategoryValidator{Validator: validator.New()}
 
 			req := httptest.NewRequest(echo.PUT, "/categories/1", bytes.NewBuffer(dataBody))
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", token+"wrongtoken"))

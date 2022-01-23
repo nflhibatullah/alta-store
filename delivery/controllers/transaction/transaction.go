@@ -25,7 +25,7 @@ func NewTransactionController(transaction repository.Transaction) *TransactionCo
 }
 
 func (tc TransactionController) Create(c echo.Context) error {
-	var transactionRequest PostCustumerRequest
+	var transactionRequest TransactionRequest
 
 	// bind request data
 	if err := c.Bind(&transactionRequest); err != nil {
