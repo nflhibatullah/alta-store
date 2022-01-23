@@ -19,8 +19,6 @@ func NewProductControllers(prorep product.ProductInterface) *ProductController {
 	return &ProductController{Repo: prorep}
 }
 
-//CreateProduct
-
 func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
@@ -35,7 +33,11 @@ func (procon ProductController) PostProductCtrl() echo.HandlerFunc {
 			CategoryID:  newProductReq.CategoryID,
 		}
 
-		product, _ := procon.Repo.Create(newProduct)
+		product, err := procon.Repo.Create(newProduct)
+
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, common.NewBadRequestResponse())
+		}
 
 		return c.JSON(http.StatusOK, common.SuccessResponse(product))
 	}
@@ -83,7 +85,7 @@ func (procon ProductController) GetAllProductCtrl() echo.HandlerFunc {
 func (procon ProductController) GetProductCtrl() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		
+
 		id, _ := strconv.Atoi(c.Param("id"))
 
 		product, err := procon.Repo.Get(id)
@@ -140,7 +142,7 @@ func (procon ProductController) PutProductCtrl() echo.HandlerFunc {
 
 		result, err := procon.Repo.Update(newProduct, id)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, common.ErrorResponse(400, "Ada kesalahan dalam update"))
+			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "Ada kesalahan dalam update"))
 		}
 
 		return c.JSON(http.StatusOK, common.SuccessResponse(result))

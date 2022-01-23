@@ -147,7 +147,13 @@ func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "User not found"))
 		}
 
-		return c.JSON(http.StatusOK, common.SuccessResponse(userData))
+		data := UserResponse{
+			ID:    uint(user.ID),
+			Name:  userData.Name,
+			Email: userData.Email,
+		}
+
+		return c.JSON(http.StatusOK, common.SuccessResponse(data))
 	}
 }
 
