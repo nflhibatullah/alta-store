@@ -5,7 +5,6 @@ import (
 	"altastore/delivery/middlewares"
 	"altastore/entities"
 	"altastore/repository/users"
-
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -136,11 +135,17 @@ func (uscon UsersController) EditUserCtrl() echo.HandlerFunc {
 
 		hash, _ := bcrypt.GenerateFromPassword([]byte(updateUserReq.Password), 14)
 
-		updateUser := entities.User{
-			Name:     updateUserReq.Name,
-			Email:    updateUserReq.Email,
-			Password: string(hash),
+		updateUser := entities.User{}
+		if updateUserReq.Name != "" {
+			updateUser.Name = updateUserReq.Name
 		}
+		if updateUserReq.Password != "" {
+			updateUser.Password = string(hash)
+		}
+		if updateUserReq.Email != "" {
+			updateUser.Email = updateUserReq.Email
+		}
+
 		userData, err := uscon.Repo.Update(updateUser, user.ID)
 
 		if err != nil {
