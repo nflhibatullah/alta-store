@@ -4,7 +4,6 @@ import (
 	"altastore/delivery/common"
 	"altastore/entities"
 	"altastore/repository/product"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -56,7 +55,6 @@ func (procon ProductController) GetAllProductCtrl() echo.HandlerFunc {
 			perpage = 10
 		}
 
-		fmt.Println(search)
 		offset := (page - 1) * perpage
 		product, _ := procon.Repo.GetAll(offset, perpage, search)
 
@@ -145,7 +143,16 @@ func (procon ProductController) PutProductCtrl() echo.HandlerFunc {
 			return c.JSON(http.StatusNotFound, common.ErrorResponse(404, "Ada kesalahan dalam update"))
 		}
 
-		return c.JSON(http.StatusOK, common.SuccessResponse(result))
+		data := ProductResponse{
+			ID:          result.ID,
+			Name:        result.Name,
+			Price:       result.Price,
+			Stock:       result.Stock,
+			Description: result.Description,
+			Category:    result.Category.Name,
+		}
+
+		return c.JSON(http.StatusOK, common.SuccessResponse(data))
 	}
 
 }

@@ -301,7 +301,7 @@ func TestUpdateProduct(t *testing.T) {
 
 			assert.Equal(t, http.StatusOK, response.Code)
 			assert.Equal(t, "Successful Operation", response.Message)
-			assert.Equal(t, "Oppo", response.Data.(map[string]interface{})["Name"])
+			assert.Equal(t, "Oppo", response.Data.(map[string]interface{})["name"])
 		},
 	)
 

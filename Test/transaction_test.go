@@ -4,8 +4,10 @@ import (
 	"altastore/configs"
 	"altastore/constant"
 	"altastore/delivery/common"
+	cartCon "altastore/delivery/controllers/cart"
 	tc "altastore/delivery/controllers/transaction"
 	"altastore/delivery/middlewares"
+	cartRepo "altastore/repository/cart"
 	tr "altastore/repository/transaction"
 	"altastore/utils"
 	"bytes"
@@ -32,10 +34,22 @@ func TestCheckout(t *testing.T)  {
 	transactionRepo := tr.NewTransactionRepository(db)
 	transactionCon := tc.NewTransactionController(transactionRepo)
 
+	cartRepo := cartRepo.NewCartRepository(db)
+	cartController := cartCon.NewCartController(cartRepo)
+
 	e := echo.New()
 	e.Validator = &tc.TransactionValidator{Validator: validator.New()}
 
 	t.Run("Transaction Success", func(t *testing.T) {
+		e.POST("/carts/:productId", cartController.Create, middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRoleUser)
+
+		reqCart := httptest.NewRequest(echo.POST, "/carts/2", nil)
+		reqCart.Header.Set("Authorization", fmt.Sprintf("Bearer %v", tokenUser))
+		
+		recCart := httptest.NewRecorder()
+		
+		e.ServeHTTP(recCart, reqCart)
+
 		e.POST("/transactions/checkout", transactionCon.Create, middleware.JWT([]byte(constant.JWT_SECRET_KEY)), middlewares.CheckRoleUser)
 
 		products := []tc.ProductTransaction{}
